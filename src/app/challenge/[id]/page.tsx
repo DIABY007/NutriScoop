@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { ChallengeParticipantList } from "@/components/challenge-participant-list";
 import { DeleteChallengeButton } from "@/components/delete-challenge-button";
+import { AddParticipantButton } from "@/components/add-participant-button";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -140,15 +141,7 @@ export default async function ChallengeHubPage({ params }: PageProps) {
           <h2 className="text-lg font-semibold text-foreground">
             Participants
           </h2>
-          <Link
-            href={`/nouveau-participant?challenge_id=${id}`}
-            className="inline-flex items-center justify-center gap-2 min-h-11 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-hover transition-colors shadow-sm"
-          >
-            <svg className="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Ajouter
-          </Link>
+          <AddParticipantButton challengeId={id} />
         </div>
 
         {liste.length > 0 ? (
@@ -165,15 +158,7 @@ export default async function ChallengeHubPage({ params }: PageProps) {
             <p className="text-sm text-muted">
               Aucun participant dans ce challenge.
             </p>
-            <Link
-              href={`/nouveau-participant?challenge_id=${id}`}
-              className="mt-4 inline-flex items-center justify-center gap-2 min-h-11 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-hover transition-colors shadow-sm"
-            >
-              <svg className="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Ajouter un participant
-            </Link>
+            <AddParticipantButton challengeId={id} variant="empty" />
           </div>
         )}
       </section>

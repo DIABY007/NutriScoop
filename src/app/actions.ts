@@ -251,3 +251,105 @@ export async function deleteParticipant(
   revalidatePath(`/challenge/${challengeId}`);
   redirect(`/challenge/${challengeId}`);
 }
+
+// ─────────────────────────────────────────────
+// Création d'un participant + évaluation initiale
+// ─────────────────────────────────────────────
+export async function createParticipantWithEvaluation(
+  challengeId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const supabase = await createClient();
+
+  // ─── Extraction ───
+  const rawNom = (formData.get("nom") as string)?.trim();
+  const rawPrenom = (formData.get("prenom") as string)?.trim();
+  const rawAge = formData.get("age") as string;
+  const rawSexe = formData.get("sexe") as string;
+  const rawPoids = formData.get("poids_initial") as string;
+  const rawProfession = (formData.get("profession") as string)?.trim() || null;
+  const rawObjectifs = (formData.get("objectifs") as string)?.trim() || null;
+  const rawHistoPoids = (formData.get("historique_poids") as string)?.trim() || null;
+  const rawMaladies = (formData.get("maladies") as string)?.trim() || null;
+  const rawAllergies = (formData.get("allergies") as string)?.trim() || null;
+  const rawTraitements = (formData.get("traitements") as string)?.trim() || null;
+  const rawDigestion = (formData.get("digestion") as string)?.trim() || null;
+  const rawHabitudes = (formData.get("habitudes_alimentaires") as string)?.trim() || null;
+  const rawHydratation = (formData.get("hydratation") as string)?.trim() || null;
+  const rawSommeilStress = (formData.get("sommeil_stress") as string)?.trim() || null;
+  const rawTaille = formData.get("taille") as string;
+  const rawTourTaille = formData.get("tour_taille") as string;
+  const rawTourHanches = formData.get("tour_hanches") as string;
+  const rawTourBras = formData.get("tour_bras") as string;
+  const rawMensurationsNotes = (formData.get("mensurations_notes") as string)?.trim() || null;
+
+  // ─── Validation ───
+  const errors: Record<string, string> = {};
+  if (!rawNom || rawNom.length < 1) errors.nom = "Le nom est requis.";
+  if (rawNom && rawNom.length > 100) errors.nom = "Le nom ne peut pas dépasser 100 caractères.";
+  if (!rawPrenom || rawPrenom.length < 1) errors.prenom = "Le prénom est requis.";
+  const age = parseInt(rawAge);
+  if (!rawAge || isNaN(age) || age < 1 || age > 150) errors.age = "L'âge doit être entre 1 et 150.";
+  if (!rawSexe || !["homme", "femme", "autre"].includes(rawSexe)) errors.sexe = "Sélectionnez un sexe.";
+  const poids = parseFloat(rawPoids);
+  if (!rawPoids || isNaN(poids) || poids <= 0 || poids > 999.99) errors.poids_initial = "Poids invalide.";
+
+  if (Object.keys(errors).length > 0) {
+    return { success: false, message: "Veuillez corriger les erreurs.", errors };
+  }
+
+  // ─── Insertion participant ───
+  const { data: newParticipant, error: err1 } = await supabase
+    .from("participants")
+    .insert({
+      challenge_id: challengeId,
+      nom: rawNom,
+      prenom: rawPrenom,
+      age,
+      sexe: rawSexe,
+      poids_initial: poids,
+      objectif: rawObjectifs || null,
+    })
+    .select("id")
+    .single();
+
+  if (err1 || !newParticipant) {
+    console.error("Erreur participant:", err1);
+    return { success: false, message: "Erreur lors de la création du participant." };
+  }
+
+  // ─── Insertion évaluation ───
+  const { error: err2 } = await supabase.from("evaluations_initiales").insert({
+    participant_id: newParticipant.id,
+    objectifs: rawObjectifs,
+    profession: rawProfession,
+    historique_poids: rawHistoPoids ? { historique: rawHistoPoids } : null,
+    etat_sante: {
+      maladies: rawMaladies || null,
+      allergies: rawAllergies || null,
+      traitements: rawTraitements || null,
+    },
+    digestion_habitudes: {
+      digestion: rawDigestion || null,
+      habitudes_alimentaires: rawHabitudes || null,
+      hydratation: rawHydratation || null,
+    },
+    sommeil_stress: rawSommeilStress,
+    mensurations: {
+      taille_cm: rawTaille ? parseFloat(rawTaille) : null,
+      tour_taille_cm: rawTourTaille ? parseFloat(rawTourTaille) : null,
+      tour_hanches_cm: rawTourHanches ? parseFloat(rawTourHanches) : null,
+      tour_bras_cm: rawTourBras ? parseFloat(rawTourBras) : null,
+      notes: rawMensurationsNotes || null,
+    },
+  });
+
+  if (err2) {
+    console.error("Erreur évaluation:", err2);
+    return { success: false, message: "Participant créé mais erreur sur l'évaluation." };
+  }
+
+  revalidatePath(`/challenge/${challengeId}`);
+  redirect(`/participant/${newParticipant.id}`);
+}

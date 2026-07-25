@@ -21,6 +21,19 @@ export interface Participant {
 
 export type InsertParticipant = Omit<Participant, "id" | "created_at">;
 
+export interface EvaluationInitiale {
+  id: string;
+  participant_id: string;
+  objectifs: string | null;
+  profession: string | null;
+  historique_poids: Record<string, unknown> | null;
+  etat_sante: Record<string, unknown> | null;
+  digestion_habitudes: Record<string, unknown> | null;
+  sommeil_stress: string | null;
+  mensurations: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export interface DailyTracking {
   id: string;
   participant_id: string;

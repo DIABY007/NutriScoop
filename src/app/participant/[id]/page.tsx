@@ -9,6 +9,13 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
+function formatJsonValue(val: unknown): string {
+  if (val === null || val === undefined) return "—";
+  if (typeof val === "string") return val;
+  if (typeof val === "number") return String(val);
+  return JSON.stringify(val);
+}
+
 export default async function ParticipantProfilePage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
@@ -20,6 +27,12 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
     .single();
 
   if (error || !participant) notFound();
+
+  const { data: evalData } = await supabase
+    .from("evaluations_initiales")
+    .select("*")
+    .eq("participant_id", id)
+    .single();
 
   const { data: trackingEntries } = await supabase
     .from("daily_tracking")
@@ -41,11 +54,26 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
 
   const initiales = `${participant.prenom.charAt(0).toUpperCase()}${participant.nom.charAt(0).toUpperCase()}`;
 
+  const ev = evalData as {
+    profession?: string | null;
+    objectifs?: string | null;
+    historique_poids?: { historique?: string } | null;
+    etat_sante?: { maladies?: string | null; allergies?: string | null; traitements?: string | null } | null;
+    digestion_habitudes?: { digestion?: string | null; habitudes_alimentaires?: string | null; hydratation?: string | null } | null;
+    sommeil_stress?: string | null;
+    mensurations?: {
+      taille_cm?: number | null;
+      tour_taille_cm?: number | null;
+      tour_hanches_cm?: number | null;
+      tour_bras_cm?: number | null;
+      notes?: string | null;
+    } | null;
+  } | null;
+
   return (
     <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
       {/* ─── Retour ─── */}
-      <Link
-        href={`/challenge/${participant.challenge_id}`}
+      <Link href={`/challenge/${participant.challenge_id}`}
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors mb-6 min-h-11 w-fit"
       >
         <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -64,20 +92,13 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
             {participant.prenom} {participant.nom}
           </h1>
           <p className="text-sm text-muted mt-1">
-            {participant.age} ans · {sexeLabel} · Inscrit depuis le {dateDebut}
+            {participant.age} ans · {sexeLabel}
+            {ev?.profession ? ` · ${ev.profession}` : ""}
+            · Inscrit depuis le {dateDebut}
           </p>
-          {participant.objectif && (
-            <p className="text-sm text-muted mt-2 max-w-lg leading-relaxed">
-              <span className="text-foreground font-medium">Objectif : </span>
-              {participant.objectif}
-            </p>
-          )}
         </div>
-
-        {/* Boutons d'action */}
         <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
-          <Link
-            href={`/participant/${participant.id}/modifier`}
+          <Link href={`/participant/${participant.id}/modifier`}
             className="inline-flex items-center justify-center gap-2 min-h-11 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-sidebar-hover transition-colors"
           >
             <svg className="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -85,19 +106,15 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
             </svg>
             Modifier
           </Link>
-          <DeleteParticipantButton
-            participantId={participant.id}
-            challengeId={participant.challenge_id}
-            participantNom={participant.nom}
-            participantPrenom={participant.prenom}
-          />
+          <DeleteParticipantButton participantId={participant.id} challengeId={participant.challenge_id}
+            participantNom={participant.nom} participantPrenom={participant.prenom} />
         </div>
       </div>
 
-      {/* ─── Sections : Profil, Formulaire, Historique ─── */}
+      {/* ─── Section : Infos de base ─── */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Informations du Profil</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Informations générales</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Âge</span>
             <span className="text-lg font-semibold text-foreground">{participant.age} ans</span>
@@ -107,24 +124,130 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
             <span className="text-lg font-semibold text-foreground">{sexeLabel}</span>
           </div>
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Poids initial</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Poids</span>
             <span className="text-lg font-semibold text-foreground">{participant.poids_initial} kg</span>
           </div>
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Date d'inscription</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Inscrit le</span>
             <span className="text-lg font-semibold text-foreground">{dateDebut}</span>
           </div>
         </div>
-        {participant.objectif && (
-          <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm mt-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Objectif</span>
-            <p className="text-sm text-foreground leading-relaxed">{participant.objectif}</p>
-          </div>
-        )}
       </section>
 
+      {/* ─── Section : Objectifs & Santé ─── */}
+      {ev && (ev.objectifs || ev.etat_sante?.maladies || ev.etat_sante?.allergies || ev.etat_sante?.traitements || ev.historique_poids) && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Objectifs & Santé</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {ev.objectifs && (
+              <div className="col-span-1 sm:col-span-2 flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Objectifs</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.objectifs}</p>
+              </div>
+            )}
+            {ev.historique_poids?.historique && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Historique du poids</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.historique_poids.historique}</p>
+              </div>
+            )}
+            {ev.etat_sante?.maladies && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Maladies / Conditions</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.etat_sante.maladies}</p>
+              </div>
+            )}
+            {ev.etat_sante?.allergies && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Allergies / Intolérances</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.etat_sante.allergies}</p>
+              </div>
+            )}
+            {ev.etat_sante?.traitements && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Traitements en cours</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.etat_sante.traitements}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ─── Section : Mode de vie ─── */}
+      {ev && (ev.digestion_habitudes?.digestion || ev.digestion_habitudes?.habitudes_alimentaires || ev.digestion_habitudes?.hydratation || ev.sommeil_stress) && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Mode de vie</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {ev.digestion_habitudes?.digestion && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Digestion</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.digestion_habitudes.digestion}</p>
+              </div>
+            )}
+            {ev.digestion_habitudes?.habitudes_alimentaires && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Habitudes alimentaires</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.digestion_habitudes.habitudes_alimentaires}</p>
+              </div>
+            )}
+            {ev.digestion_habitudes?.hydratation && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Hydratation</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.digestion_habitudes.hydratation}</p>
+              </div>
+            )}
+            {ev.sommeil_stress && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Sommeil & Stress</span>
+                <p className="text-sm text-foreground leading-relaxed">{ev.sommeil_stress}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ─── Section : Mensurations ─── */}
+      {ev?.mensurations && (ev.mensurations.taille_cm || ev.mensurations.tour_taille_cm || ev.mensurations.tour_hanches_cm || ev.mensurations.tour_bras_cm) && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Mensurations corporelles</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {ev.mensurations.taille_cm && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Taille</span>
+                <span className="text-lg font-semibold text-foreground">{ev.mensurations.taille_cm} cm</span>
+              </div>
+            )}
+            {ev.mensurations.tour_taille_cm && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tour de taille</span>
+                <span className="text-lg font-semibold text-foreground">{ev.mensurations.tour_taille_cm} cm</span>
+              </div>
+            )}
+            {ev.mensurations.tour_hanches_cm && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tour de hanches</span>
+                <span className="text-lg font-semibold text-foreground">{ev.mensurations.tour_hanches_cm} cm</span>
+              </div>
+            )}
+            {ev.mensurations.tour_bras_cm && (
+              <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tour de bras</span>
+                <span className="text-lg font-semibold text-foreground">{ev.mensurations.tour_bras_cm} cm</span>
+              </div>
+            )}
+          </div>
+          {ev.mensurations.notes && (
+            <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm mt-4">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Notes</span>
+              <p className="text-sm text-foreground leading-relaxed">{ev.mensurations.notes}</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ─── Section : Suivi Quotidien (Phase 4) ─── */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Tableau de Suivi Quotidien</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Suivi Quotidien</h2>
         <DailyTrackingForm participantId={id} />
       </section>
 
