@@ -52,6 +52,75 @@ export async function createChallenge(
 }
 
 // ─────────────────────────────────────────────
+// Mise à jour d'un challenge
+// ─────────────────────────────────────────────
+export async function updateChallenge(
+  challengeId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const supabase = await createClient();
+
+  const rawNom = (formData.get("nom") as string)?.trim();
+  const rawDateDebut = formData.get("date_debut") as string;
+  const rawDateFin = formData.get("date_fin") as string;
+  const rawStatut = formData.get("statut") as string;
+
+  const errors: Record<string, string> = {};
+
+  if (!rawNom || rawNom.length < 1) errors.nom = "Le nom du challenge est requis.";
+  if (rawNom && rawNom.length > 200) errors.nom = "Le nom ne peut pas dépasser 200 caractères.";
+  if (!rawDateDebut) errors.date_debut = "La date de début est requise.";
+  if (!rawDateFin) errors.date_fin = "La date de fin est requise.";
+  if (rawDateDebut && rawDateFin && rawDateFin < rawDateDebut)
+    errors.date_fin = "La date de fin doit être après la date de début.";
+  if (!rawStatut || !["actif", "termine"].includes(rawStatut))
+    errors.statut = "Veuillez sélectionner un statut valide.";
+
+  if (Object.keys(errors).length > 0) {
+    return { success: false, message: "Veuillez corriger les erreurs ci-dessous.", errors };
+  }
+
+  const { error } = await supabase
+    .from("challenges")
+    .update({
+      nom: rawNom,
+      date_debut: rawDateDebut,
+      date_fin: rawDateFin,
+      statut: rawStatut,
+    })
+    .eq("id", challengeId);
+
+  if (error) {
+    console.error("Erreur Supabase:", error);
+    return { success: false, message: "Erreur lors de la modification du challenge." };
+  }
+
+  revalidatePath(`/challenge/${challengeId}`);
+  redirect(`/challenge/${challengeId}`);
+}
+
+// ─────────────────────────────────────────────
+// Suppression d'un challenge
+// ─────────────────────────────────────────────
+export async function deleteChallenge(challengeId: string): Promise<void> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("challenges")
+    .delete()
+    .eq("id", challengeId);
+
+  if (error) {
+    console.error("Erreur Supabase:", error);
+    throw new Error("Impossible de supprimer le challenge.");
+  }
+
+  revalidatePath("/");
+  redirect("/");
+}
+
+// ─────────────────────────────────────────────
 // Création d'un participant (lié à un challenge)
 // ─────────────────────────────────────────────
 export async function createParticipant(
