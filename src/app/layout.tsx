@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "NutriScoop — Suivi nutritionnel & sportif",
-    template: "%s | NutriScoop",
+    default: "Aurore AgroVital — Suivi nutritionnel & sportif",
+    template: "%s | Aurore AgroVital",
   },
   description:
     "Application de suivi nutritionnel et sportif par challenges.",
@@ -53,9 +53,9 @@ export default function RootLayout({
             className="flex items-center gap-2 text-foreground font-semibold text-lg"
           >
             <span className="flex items-center justify-center size-8 rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-              N
+              A
             </span>
-            <span>NutriScoop</span>
+            <span>Aurore AgroVital</span>
           </Link>
 
           <nav className="flex items-center gap-1" aria-label="Navigation mobile">
@@ -76,10 +76,10 @@ export default function RootLayout({
           <div className="flex flex-col flex-1 min-h-0">
             <div className="flex items-center gap-3 h-16 px-6 border-b border-border shrink-0">
               <span className="flex items-center justify-center size-9 rounded-xl bg-primary text-primary-foreground text-lg font-bold">
-                N
+                A
               </span>
               <span className="text-foreground font-semibold text-lg">
-                NutriScoop
+                Aurore AgroVital
               </span>
             </div>
 
@@ -97,7 +97,7 @@ export default function RootLayout({
 
             <div className="px-3 py-4 border-t border-border shrink-0">
               <p className="text-xs text-muted-foreground px-3">
-                NutriScoop v2.0
+                Aurore AgroVital v2.0
               </p>
             </div>
           </div>
