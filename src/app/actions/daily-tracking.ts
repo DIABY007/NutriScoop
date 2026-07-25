@@ -25,6 +25,8 @@ export async function addDailyTracking(
   const rawSport = formData.get("score_sport") as string;
   const rawSommeil = (formData.get("note_sommeil") as string)?.trim() || "";
   const rawStress = (formData.get("note_stress") as string)?.trim() || "";
+  const rawPoidsJour = (formData.get("poids_du_jour") as string)?.trim() || "";
+  const rawTourTailleJour = (formData.get("tour_taille_du_jour") as string)?.trim() || "";
 
   // ─── Validation ───
   const errors: Record<string, string> = {};
@@ -59,6 +61,14 @@ export async function addDailyTracking(
   if (stress !== null && (isNaN(stress) || stress < 0 || stress > 10))
     errors.note_stress = "Doit être entre 0 et 10.";
 
+  const poidsJour = rawPoidsJour ? parseFloat(rawPoidsJour) : null;
+  if (poidsJour !== null && (isNaN(poidsJour) || poidsJour <= 0 || poidsJour > 999.99))
+    errors.poids_du_jour = "Poids invalide.";
+
+  const tourTailleJour = rawTourTailleJour ? parseInt(rawTourTailleJour) : null;
+  if (tourTailleJour !== null && (isNaN(tourTailleJour) || tourTailleJour <= 0 || tourTailleJour > 300))
+    errors.tour_taille_du_jour = "Tour de taille invalide.";
+
   if (Object.keys(errors).length > 0) {
     return { success: false, message: "Veuillez corriger les erreurs.", errors };
   }
@@ -81,6 +91,8 @@ export async function addDailyTracking(
     note_sommeil: sommeil,
     note_stress: stress,
     score_total: scoreTotal,
+    poids_du_jour: poidsJour,
+    tour_taille_du_jour: tourTailleJour,
   });
 
   if (error) {

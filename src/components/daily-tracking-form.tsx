@@ -33,6 +33,8 @@ export function DailyTrackingForm({ participantId }: Props) {
     score_sport: "",
     note_sommeil: "",
     note_stress: "",
+    poids_du_jour: "",
+    tour_taille_du_jour: "",
   });
 
   const updateField = (name: string, value: string) => {
@@ -48,6 +50,9 @@ export function DailyTrackingForm({ participantId }: Props) {
     const nutrition = Math.round((pj + dj + dn) / 3);
     return nutrition + hy + sp;
   })();
+
+  // Ces champs ne sont pas comptabilisés dans le score
+  const hasExtras = fields.poids_du_jour || fields.tour_taille_du_jour;
 
   const previewColor =
     previewTotal >= 70
@@ -274,6 +279,61 @@ export function DailyTrackingForm({ participantId }: Props) {
           {state.errors?.note_stress && (
             <p className="text-xs text-destructive">{state.errors.note_stress}</p>
           )}
+        </div>
+      </div>
+
+      {/* ─── Séparateur ─── */}
+      <div className="border-t border-border pt-4 mb-4">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+          Données du jour <span className="text-xs font-normal normal-case">(non comptabilisées dans le score)</span>
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Poids du jour */}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="poids_du_jour" className="text-sm font-medium text-foreground">
+              Poids <span className="text-muted-foreground text-xs">(optionnel)</span>
+            </label>
+            <div className="relative max-w-40">
+              <input
+                id="poids_du_jour"
+                name="poids_du_jour"
+                type="number"
+                step="0.1"
+                min={0.1}
+                max={999.99}
+                placeholder="Ex: 74.5"
+                aria-invalid={!!state.errors?.poids_du_jour}
+                className="w-full h-11 px-4 pr-8 rounded-xl border border-input bg-surface text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">kg</span>
+            </div>
+            {state.errors?.poids_du_jour && (
+              <p className="text-xs text-destructive">{state.errors.poids_du_jour}</p>
+            )}
+          </div>
+
+          {/* Tour de taille du jour */}
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="tour_taille_du_jour" className="text-sm font-medium text-foreground">
+              Tour de taille <span className="text-muted-foreground text-xs">(optionnel)</span>
+            </label>
+            <div className="relative max-w-40">
+              <input
+                id="tour_taille_du_jour"
+                name="tour_taille_du_jour"
+                type="number"
+                min={1}
+                max={300}
+                placeholder="Ex: 83"
+                aria-invalid={!!state.errors?.tour_taille_du_jour}
+                className="w-full h-11 px-4 pr-8 rounded-xl border border-input bg-surface text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">cm</span>
+            </div>
+            {state.errors?.tour_taille_du_jour && (
+              <p className="text-xs text-destructive">{state.errors.tour_taille_du_jour}</p>
+            )}
+          </div>
         </div>
       </div>
 

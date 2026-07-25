@@ -23,3 +23,10 @@ CREATE INDEX idx_evaluations_participant ON evaluations_initiales (participant_i
 -- RLS
 ALTER TABLE evaluations_initiales ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "allow_all_evaluations" ON evaluations_initiales FOR ALL TO public USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- Ajout colonnes suivi quotidien : poids + tour de taille
+-- ============================================================
+ALTER TABLE daily_tracking
+    ADD COLUMN poids_du_jour     DECIMAL(5,2) CHECK (poids_du_jour > 0 AND poids_du_jour < 999.99),
+    ADD COLUMN tour_taille_du_jour INTEGER  CHECK (tour_taille_du_jour > 0 AND tour_taille_du_jour < 300);

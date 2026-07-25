@@ -75,6 +75,12 @@ export function DailyTrackingHistory({ entries }: Props) {
             <th className="text-center px-3 py-3 font-medium text-muted-foreground whitespace-nowrap">
               Total
             </th>
+            <th className="text-center px-3 py-3 font-medium text-muted-foreground whitespace-nowrap" title="Poids du jour">
+              ⚖️
+            </th>
+            <th className="text-center px-3 py-3 font-medium text-muted-foreground whitespace-nowrap" title="Tour de taille du jour">
+              📏
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -115,6 +121,12 @@ export function DailyTrackingHistory({ entries }: Props) {
                 >
                   {entry.score_total}
                 </span>
+              </td>
+              <td className="px-3 py-3 text-center text-muted-foreground tabular-nums text-xs">
+                {entry.poids_du_jour ? `${entry.poids_du_jour} kg` : "—"}
+              </td>
+              <td className="px-3 py-3 text-center text-muted-foreground tabular-nums text-xs">
+                {entry.tour_taille_du_jour ? `${entry.tour_taille_du_jour} cm` : "—"}
               </td>
             </tr>
           ))}

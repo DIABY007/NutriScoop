@@ -46,5 +46,7 @@ export interface DailyTracking {
   note_sommeil: number | null;
   note_stress: number | null;
   score_total: number;
+  poids_du_jour: number | null;
+  tour_taille_du_jour: number | null;
   created_at: string;
 }
