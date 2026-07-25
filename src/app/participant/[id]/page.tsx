@@ -13,18 +13,14 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
-  // ─── Récupération du participant ───
   const { data: participant, error } = await supabase
     .from("participants")
-    .select("*")
+    .select("*, challenges(nom)")
     .eq("id", id)
     .single();
 
-  if (error || !participant) {
-    notFound();
-  }
+  if (error || !participant) notFound();
 
-  // ─── Récupération de l'historique ───
   const { data: trackingEntries } = await supabase
     .from("daily_tracking")
     .select("*")
@@ -32,15 +28,12 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
     .order("date", { ascending: false });
 
   const entries = trackingEntries ?? [];
+  const challengeNom = (participant.challenges as { nom: string } | null)?.nom ?? "Challenge";
 
   const sexeLabel =
-    participant.sexe === "homme"
-      ? "Homme"
-      : participant.sexe === "femme"
-        ? "Femme"
-        : "Autre";
+    participant.sexe === "homme" ? "Homme" : participant.sexe === "femme" ? "Femme" : "Autre";
 
-  const dateDebut = new Date(participant.date_debut).toLocaleDateString("fr-FR", {
+  const dateDebut = new Date(participant.created_at).toLocaleDateString("fr-FR", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -52,23 +45,16 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
     <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
       {/* ─── Retour ─── */}
       <Link
-        href="/"
+        href={`/challenge/${participant.challenge_id}`}
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors mb-6 min-h-11 w-fit"
       >
-        <svg
-          className="size-4 shrink-0"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden="true"
-        >
+        <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
         </svg>
-        Retour au tableau de bord
+        Retour au challenge — {challengeNom}
       </Link>
 
-      {/* ─── Bannière / En-tête du profil ─── */}
+      {/* ─── Bannière ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 p-6 rounded-2xl bg-surface border border-border shadow-sm mb-8">
         <span className="flex items-center justify-center size-16 sm:size-20 rounded-full bg-primary-light text-primary text-xl sm:text-2xl font-bold shrink-0">
           {initiales}
@@ -78,7 +64,7 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
             {participant.prenom} {participant.nom}
           </h1>
           <p className="text-sm text-muted mt-1">
-            {participant.age} ans · {sexeLabel} · Suivi depuis le {dateDebut}
+            {participant.age} ans · {sexeLabel} · Inscrit depuis le {dateDebut}
           </p>
           {participant.objectif && (
             <p className="text-sm text-muted mt-2 max-w-lg leading-relaxed">
@@ -101,72 +87,47 @@ export default async function ParticipantProfilePage({ params }: PageProps) {
           </Link>
           <DeleteParticipantButton
             participantId={participant.id}
+            challengeId={participant.challenge_id}
             participantNom={participant.nom}
             participantPrenom={participant.prenom}
           />
         </div>
       </div>
 
-      {/* ─── Section : Informations du Profil ─── */}
+      {/* ─── Sections : Profil, Formulaire, Historique ─── */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Informations du Profil
-        </h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Informations du Profil</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Âge
-            </span>
-            <span className="text-lg font-semibold text-foreground">
-              {participant.age} ans
-            </span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Âge</span>
+            <span className="text-lg font-semibold text-foreground">{participant.age} ans</span>
           </div>
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Sexe
-            </span>
-            <span className="text-lg font-semibold text-foreground">
-              {sexeLabel}
-            </span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Sexe</span>
+            <span className="text-lg font-semibold text-foreground">{sexeLabel}</span>
           </div>
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Poids initial
-            </span>
-            <span className="text-lg font-semibold text-foreground">
-              {participant.poids_initial} kg
-            </span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Poids initial</span>
+            <span className="text-lg font-semibold text-foreground">{participant.poids_initial} kg</span>
           </div>
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Date de début
-            </span>
-            <span className="text-lg font-semibold text-foreground">
-              {dateDebut}
-            </span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Date d'inscription</span>
+            <span className="text-lg font-semibold text-foreground">{dateDebut}</span>
           </div>
         </div>
         {participant.objectif && (
           <div className="flex flex-col gap-1 p-4 rounded-xl bg-surface border border-border shadow-sm mt-4">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Objectif
-            </span>
-            <p className="text-sm text-foreground leading-relaxed">
-              {participant.objectif}
-            </p>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Objectif</span>
+            <p className="text-sm text-foreground leading-relaxed">{participant.objectif}</p>
           </div>
         )}
       </section>
 
-      {/* ─── Section : Formulaire de suivi quotidien ─── */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">
-          Tableau de Suivi Quotidien
-        </h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Tableau de Suivi Quotidien</h2>
         <DailyTrackingForm participantId={id} />
       </section>
 
-      {/* ─── Section : Historique ─── */}
       <section>
         <h2 className="text-lg font-semibold text-foreground mb-4">
           Historique des suivis

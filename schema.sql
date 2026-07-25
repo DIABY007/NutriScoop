@@ -1,35 +1,44 @@
 -- ============================================================
--- Schéma de base de données NutriScoop — V1
+-- Schéma NutriScoop V2 — Architecture Challenges
 -- Stack : Supabase (PostgreSQL)
 -- ============================================================
 
 -- ------------------------------------------------------------
--- 1. Table : participants
--- Stocke les informations de base de chaque participant au suivi
+-- 1. Table : challenges (cohortes)
+-- ------------------------------------------------------------
+CREATE TABLE challenges (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nom             VARCHAR(200)    NOT NULL,
+    date_debut      DATE            NOT NULL,
+    date_fin        DATE            NOT NULL,
+    statut          VARCHAR(10)     NOT NULL DEFAULT 'actif'
+                    CHECK (statut IN ('actif', 'termine')),
+    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+
+    CHECK (date_fin >= date_debut)
+);
+
+CREATE INDEX idx_challenges_statut ON challenges (statut, created_at DESC);
+
+-- ------------------------------------------------------------
+-- 2. Table : participants (liée à un challenge)
 -- ------------------------------------------------------------
 CREATE TABLE participants (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    challenge_id    UUID            NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
     nom             VARCHAR(100)    NOT NULL,
     prenom          VARCHAR(100)    NOT NULL,
     age             INTEGER         NOT NULL CHECK (age > 0 AND age < 150),
     sexe            VARCHAR(10)     NOT NULL CHECK (sexe IN ('homme', 'femme', 'autre')),
     poids_initial   DECIMAL(5,2)    NOT NULL CHECK (poids_initial > 0),
     objectif        TEXT,
-    date_debut      DATE            NOT NULL DEFAULT CURRENT_DATE,
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
--- Index pour faciliter la recherche par nom
-CREATE INDEX idx_participants_nom ON participants (nom, prenom);
+CREATE INDEX idx_participants_challenge ON participants (challenge_id, nom, prenom);
 
 -- ------------------------------------------------------------
--- 2. Table : daily_tracking
--- Suivi quotidien : repas, hydratation, sport, sommeil, stress
--- Barèmes : repas /40 · hydratation /20 · sport /40
--- score_total calculé côté serveur (max 100) :
---   Score Nutrition = moyenne des 3 repas (max 40)
---   Score Total     = Nutrition + Hydratation + Sport (max 100)
--- note_sommeil et note_stress sont stockées séparément (/10)
+-- 3. Table : daily_tracking (inchangée, liée à participants)
 -- ------------------------------------------------------------
 CREATE TABLE daily_tracking (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -44,15 +53,19 @@ CREATE TABLE daily_tracking (
     note_stress         INTEGER         CHECK (note_stress BETWEEN 0 AND 10),
     score_total         INTEGER         NOT NULL DEFAULT 0 CHECK (score_total BETWEEN 0 AND 100),
     created_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-
-    -- Un seul enregistrement par participant et par jour
     UNIQUE (participant_id, date)
 );
 
--- Index pour les requêtes par participant et par date
 CREATE INDEX idx_daily_tracking_participant_date
     ON daily_tracking (participant_id, date DESC);
 
--- Index pour les requêtes agrégées (moyennes, totaux)
-CREATE INDEX idx_daily_tracking_date
-    ON daily_tracking (date DESC);
+-- ------------------------------------------------------------
+-- Politiques RLS (accès public)
+-- ------------------------------------------------------------
+ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_tracking ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "allow_all_challenges" ON challenges FOR ALL TO public USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_participants" ON participants FOR ALL TO public USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_daily_tracking" ON daily_tracking FOR ALL TO public USING (true) WITH CHECK (true);

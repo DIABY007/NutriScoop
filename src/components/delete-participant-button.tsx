@@ -6,12 +6,14 @@ import { deleteParticipant } from "@/app/actions";
 
 type Props = {
   participantId: string;
+  challengeId: string;
   participantNom: string;
   participantPrenom: string;
 };
 
 export function DeleteParticipantButton({
   participantId,
+  challengeId,
   participantNom,
   participantPrenom,
 }: Props) {
@@ -22,7 +24,7 @@ export function DeleteParticipantButton({
   const handleDelete = async () => {
     setPending(true);
     try {
-      await deleteParticipant(participantId);
+      await deleteParticipant(participantId, challengeId);
     } catch {
       setPending(false);
       setShowConfirm(false);
@@ -31,7 +33,6 @@ export function DeleteParticipantButton({
 
   return (
     <>
-      {/* Bouton "Supprimer" */}
       <button
         type="button"
         onClick={() => setShowConfirm(true)}
@@ -43,16 +44,9 @@ export function DeleteParticipantButton({
         Supprimer
       </button>
 
-      {/* Modal de confirmation */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => !pending && setShowConfirm(false)}
-          />
-
-          {/* Dialog */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => !pending && setShowConfirm(false)} />
           <div className="relative w-full max-w-md p-6 rounded-2xl bg-surface shadow-xl border border-border">
             <div className="flex items-center gap-3 mb-4">
               <span className="flex items-center justify-center size-10 rounded-full bg-destructive/10 shrink-0">
@@ -61,44 +55,24 @@ export function DeleteParticipantButton({
                 </svg>
               </span>
               <div>
-                <h3 className="text-base font-semibold text-foreground">
-                  Supprimer le participant
-                </h3>
-                <p className="text-sm text-muted mt-0.5">
-                  Cette action est irréversible.
-                </p>
+                <h3 className="text-base font-semibold text-foreground">Supprimer le participant</h3>
+                <p className="text-sm text-muted mt-0.5">Cette action est irréversible.</p>
               </div>
             </div>
-
             <p className="text-sm text-foreground mb-6">
               Êtes-vous sûr de vouloir supprimer <strong>{participantPrenom} {participantNom}</strong> ?
               Tous ses suivis quotidiens seront également supprimés.
             </p>
-
             <div className="flex flex-col sm:flex-row-reverse gap-3">
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={pending}
+              <button type="button" onClick={handleDelete} disabled={pending}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-11 px-5 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {pending ? (
-                  <>
-                    <svg className="size-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z" />
-                    </svg>
-                    Suppression…
-                  </>
-                ) : (
-                  "Oui, supprimer"
-                )}
+                  <><svg className="size-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z" /></svg>Suppression…</>
+                ) : "Oui, supprimer"}
               </button>
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                disabled={pending}
-                className="w-full sm:w-auto inline-flex items-center justify-center min-h-11 px-5 py-2.5 rounded-xl border border-input text-sm font-medium text-foreground hover:bg-sidebar-hover transition-colors disabled:opacity-50"
+              <button type="button" onClick={() => setShowConfirm(false)} disabled={pending}
+                className="w-full sm:w-auto inline-flex items-center justify-center min-h-11 px-5 py-2.5 rounded-xl border border-input text-sm font-medium text-foreground hover:bg-sidebar-hover transition-colors"
               >
                 Annuler
               </button>

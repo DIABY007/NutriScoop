@@ -1,38 +1,35 @@
 -- ============================================================
--- Migration NutriScoop — Étape 4
--- Mise à jour des barèmes daily_tracking :
---   repas : 0–40 | hydratation : 0–20 | sport : 0–40
---   score_total calculé côté serveur (max 100)
+-- Migration V1 → V2 : Ajout de la table challenges
+-- Exécuter DANS L'ORDRE dans Supabase
 -- ============================================================
 
--- 1. Supprimer la colonne générée pour la recréer en colonne standard
-ALTER TABLE daily_tracking DROP COLUMN score_total;
+-- 1. Créer la table challenges
+CREATE TABLE challenges (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nom             VARCHAR(200)    NOT NULL,
+    date_debut      DATE            NOT NULL,
+    date_fin        DATE            NOT NULL,
+    statut          VARCHAR(10)     NOT NULL DEFAULT 'actif'
+                    CHECK (statut IN ('actif', 'termine')),
+    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    CHECK (date_fin >= date_debut)
+);
 
--- 2. Modifier les CHECK constraints des scores
-ALTER TABLE daily_tracking
-    ALTER COLUMN score_petit_dej   TYPE INTEGER,
-    ADD CONSTRAINT chk_petit_dej   CHECK (score_petit_dej   BETWEEN 0 AND 40);
+-- 2. Ajouter la colonne challenge_id dans participants
+ALTER TABLE participants ADD COLUMN challenge_id UUID REFERENCES challenges(id) ON DELETE CASCADE;
 
-ALTER TABLE daily_tracking
-    ALTER COLUMN score_dej         TYPE INTEGER,
-    ADD CONSTRAINT chk_dej         CHECK (score_dej         BETWEEN 0 AND 40);
+-- 3. Index
+CREATE INDEX idx_challenges_statut ON challenges (statut, created_at DESC);
+CREATE INDEX idx_participants_challenge ON participants (challenge_id, nom, prenom);
 
-ALTER TABLE daily_tracking
-    ALTER COLUMN score_diner       TYPE INTEGER,
-    ADD CONSTRAINT chk_diner       CHECK (score_diner       BETWEEN 0 AND 40);
+-- 4. RLS pour challenges
+ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all_challenges" ON challenges FOR ALL TO public USING (true) WITH CHECK (true);
 
-ALTER TABLE daily_tracking
-    ALTER COLUMN score_hydratation TYPE INTEGER,
-    ADD CONSTRAINT chk_hydratation CHECK (score_hydratation BETWEEN 0 AND 20);
-
-ALTER TABLE daily_tracking
-    ALTER COLUMN score_sport       TYPE INTEGER,
-    ADD CONSTRAINT chk_sport       CHECK (score_sport       BETWEEN 0 AND 40);
-
--- 3. Ajouter score_total comme colonne standard (calculé côté serveur)
-ALTER TABLE daily_tracking
-    ADD COLUMN score_total INTEGER NOT NULL DEFAULT 0
-    CHECK (score_total BETWEEN 0 AND 100);
-
--- Note : les contraintes CHECK existantes pour note_sommeil et note_stress
--- (0–10) restent inchangées.
+-- 5. Mettre à jour la RLS existante sur participants (si elle existe déjà)
+-- Optionnel : supprimer les anciennes politiques et les recréer
+DROP POLICY IF EXISTS "allow_insert_participants" ON participants;
+DROP POLICY IF EXISTS "allow_select_participants" ON participants;
+DROP POLICY IF EXISTS "allow_update_participants" ON participants;
+DROP POLICY IF EXISTS "allow_delete_participants" ON participants;
+CREATE POLICY "allow_all_participants" ON participants FOR ALL TO public USING (true) WITH CHECK (true);

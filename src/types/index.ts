@@ -1,16 +1,25 @@
+export interface Challenge {
+  id: string;
+  nom: string;
+  date_debut: string;
+  date_fin: string;
+  statut: "actif" | "termine";
+  created_at: string;
+}
+
 export interface Participant {
   id: string;
+  challenge_id: string;
   nom: string;
   prenom: string;
   age: number;
   sexe: "homme" | "femme" | "autre";
   poids_initial: number;
   objectif: string | null;
-  date_debut: string;
   created_at: string;
 }
 
-export type InsertParticipant = Omit<Participant, "id" | "date_debut" | "created_at">;
+export type InsertParticipant = Omit<Participant, "id" | "created_at">;
 
 export interface DailyTracking {
   id: string;
