@@ -103,3 +103,49 @@ export async function updateNiveauSuivi(
   revalidatePath(`/suivi-nutritionnel/${suiviId}`);
   return { success: true, message: "Niveau de suivi mis à jour." };
 }
+
+// ─────────────────────────────────────────────
+// Sauvegarde de l'évaluation nutritionnelle
+// ─────────────────────────────────────────────
+export async function saveEvaluation(
+  suiviId: string,
+  data: Record<string, string>
+): Promise<ActionState> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("suivis_nutritionnels")
+    .update({ evaluation_nutritionnelle: data })
+    .eq("id", suiviId);
+
+  if (error) {
+    console.error("Erreur Supabase:", error);
+    return { success: false, message: "Erreur lors de la sauvegarde de l'évaluation." };
+  }
+
+  revalidatePath(`/suivi-nutritionnel/${suiviId}`);
+  return { success: true, message: "Évaluation sauvegardée avec succès !" };
+}
+
+// ─────────────────────────────────────────────
+// Sauvegarde du programme nutritionnel
+// ─────────────────────────────────────────────
+export async function saveProgramme(
+  suiviId: string,
+  html: string
+): Promise<ActionState> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("suivis_nutritionnels")
+    .update({ programme_nutritionnel: html })
+    .eq("id", suiviId);
+
+  if (error) {
+    console.error("Erreur Supabase:", error);
+    return { success: false, message: "Erreur lors de la sauvegarde du programme." };
+  }
+
+  revalidatePath(`/suivi-nutritionnel/${suiviId}`);
+  return { success: true, message: "Programme sauvegardé avec succès !" };
+}
