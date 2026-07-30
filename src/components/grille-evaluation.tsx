@@ -10,13 +10,14 @@ type Question = {
   type: "text" | "textarea" | "select" | "number";
   options?: string[];
   placeholder?: string;
+  readonly?: boolean;
 };
 
 const QUESTIONS: Question[] = [
   // ── Anthropométrie ──
   { id: "poids", categorie: "Anthropométrie", question: "Poids actuel (kg)", type: "number", placeholder: "Ex: 72" },
   { id: "taille", categorie: "Anthropométrie", question: "Taille (cm)", type: "number", placeholder: "Ex: 165" },
-  { id: "imc", categorie: "Anthropométrie", question: "IMC", type: "number", placeholder: "Calcul automatique" },
+  { id: "imc", categorie: "Anthropométrie", question: "IMC", type: "number", placeholder: "Calcul automatique", readonly: true },
   { id: "tour_taille", categorie: "Anthropométrie", question: "Tour de taille (cm)", type: "number", placeholder: "Ex: 85" },
 
   // ── Habitudes alimentaires ──
@@ -92,7 +93,8 @@ function GroupeQuestions({
                 value={reponses[q.id] ?? ""}
                 onChange={(e) => onChange(q.id, e.target.value)}
                 placeholder={q.placeholder}
-                className="block w-full min-h-11 px-4 py-2.5 rounded-xl bg-surface border border-border text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-shadow"
+                readOnly={q.readonly}
+                className={`block w-full min-h-11 px-4 py-2.5 rounded-xl bg-surface border border-border text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-shadow ${q.readonly ? "bg-muted/20 text-muted-foreground cursor-not-allowed" : ""}`}
               />
             ) : (
               <input
@@ -122,7 +124,22 @@ export default function GrilleEvaluation({ initialData, onSave }: GrilleEvaluati
   const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = useCallback((id: string, value: string) => {
-    setReponses((prev) => ({ ...prev, [id]: value }));
+    setReponses((prev) => {
+      const next = { ...prev, [id]: value };
+
+      // ─── Calcul automatique de l'IMC ───
+      if (id === "poids" || id === "taille") {
+        const poids = parseFloat(id === "poids" ? value : next.poids ?? "");
+        const tailleCm = parseFloat(id === "taille" ? value : next.taille ?? "");
+        if (poids > 0 && tailleCm > 0) {
+          const tailleM = tailleCm / 100;
+          const imc = poids / (tailleM * tailleM);
+          next.imc = imc.toFixed(1);
+        }
+      }
+
+      return next;
+    });
   }, []);
 
   const handleSave = useCallback(() => {
