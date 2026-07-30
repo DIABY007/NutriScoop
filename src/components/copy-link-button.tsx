@@ -5,19 +5,33 @@ import { useState, useCallback } from "react";
 type CopyLinkButtonProps = {
   accessToken: string;
   participantPrenom: string;
+  participantNom: string;
 };
 
-export default function CopyLinkButton({ accessToken, participantPrenom }: CopyLinkButtonProps) {
+function slugify(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // supprime les accents
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // remplace les espaces/caractères spéciaux par -
+    .replace(/^-+|-+$/g, ""); // supprime les tirets en début/fin
+}
+
+export default function CopyLinkButton({
+  accessToken,
+  participantPrenom,
+  participantNom,
+}: CopyLinkButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
-    const url = `${window.location.origin}/portal/${accessToken}`;
+    const slug = `${slugify(participantPrenom)}-${slugify(participantNom)}`;
+    const url = `${window.location.origin}/portal/${slug}/${accessToken}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
     } catch {
-      // Fallback pour les navigateurs sans clipboard API
       const textarea = document.createElement("textarea");
       textarea.value = url;
       textarea.style.position = "fixed";
@@ -29,7 +43,7 @@ export default function CopyLinkButton({ accessToken, participantPrenom }: CopyL
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
     }
-  }, [accessToken]);
+  }, [accessToken, participantPrenom, participantNom]);
 
   return (
     <button

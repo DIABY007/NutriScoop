@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function PortalNotFound() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -16,7 +14,6 @@ export default function PortalNotFound() {
 
       <main className="flex-1 flex items-center justify-center px-4">
         <div className="flex flex-col items-center text-center max-w-sm py-16">
-          {/* ─── Icône ─── */}
           <div className="flex items-center justify-center size-20 rounded-full bg-warning/10 mb-6">
             <svg
               className="size-10 text-warning"

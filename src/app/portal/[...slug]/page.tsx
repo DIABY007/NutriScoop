@@ -1,14 +1,18 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import ProgressGauge from "@/components/progress-gauge";
 
 type PageProps = {
-  params: Promise<{ token: string }>;
+  params: Promise<{ slug: string[] }>;
 };
 
 export default async function PatientPortalPage({ params }: PageProps) {
-  const { token } = await params;
+  const { slug } = await params;
+  // Le dernier segment du slug est le token UUID
+  const token = slug[slug.length - 1];
+
+  if (!token) notFound();
+
   const supabase = await createClient();
 
   // ─── Recherche du suivi nutritionnel par access_token ───
@@ -18,7 +22,6 @@ export default async function PatientPortalPage({ params }: PageProps) {
     .eq("access_token", token)
     .single();
 
-  // ─── Token invalide ou expiré → 404 stylisée ───
   if (error || !suivi) {
     notFound();
   }
@@ -27,7 +30,6 @@ export default async function PatientPortalPage({ params }: PageProps) {
   const prenom = participant.prenom;
   const initiales = `${prenom.charAt(0).toUpperCase()}${participant.nom.charAt(0).toUpperCase()}`;
 
-  // ─── Niveau de suivi ───
   const niveauSuivi: Record<string, string> = {
     ESSENTIELLE: "Essentielle",
     RENFORCEE: "Renforcée",
@@ -133,7 +135,6 @@ export default async function PatientPortalPage({ params }: PageProps) {
           )}
         </section>
 
-        {/* ─── Pied de page ─── */}
         <footer className="mt-12 text-center">
           <p className="text-xs text-muted-foreground">
             Aurore AgroVital &mdash; Suivi nutritionnel personnalisé

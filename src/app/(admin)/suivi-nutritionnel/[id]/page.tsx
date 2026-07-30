@@ -70,7 +70,7 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
           <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-success/10 text-success">
             Suivi actif
           </span>
-          <CopyLinkButton accessToken={suivi.access_token} participantPrenom={participant.prenom} />
+          <CopyLinkButton accessToken={suivi.access_token} participantPrenom={participant.prenom} participantNom={participant.nom} />
         </div>
       </div>
 
