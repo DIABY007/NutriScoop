@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { SuiviNutritionnelTabs } from "./suivi-tabs";
+import CopyLinkButton from "@/components/copy-link-button";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -65,10 +66,11 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
             {participant.prenom} {participant.nom} · {participant.age} ans · {challengeNom}
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+        <div className="flex items-center gap-3 shrink-0 self-start sm:self-center flex-wrap">
           <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-success/10 text-success">
             Suivi actif
           </span>
+          <CopyLinkButton accessToken={suivi.access_token} participantPrenom={participant.prenom} />
         </div>
       </div>
 
