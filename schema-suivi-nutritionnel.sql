@@ -43,35 +43,14 @@ CREATE TRIGGER trg_suivis_nutritionnels_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- ------------------------------------------------------------
--- RLS — accès réservé aux utilisateurs authentifiés
+-- RLS — accès public (pas d'authentification en place)
 -- ------------------------------------------------------------
 ALTER TABLE suivis_nutritionnels ENABLE ROW LEVEL SECURITY;
 
--- Lecture : utilisateur authentifié
-CREATE POLICY "allow_select_suivis_nutritionnels"
+-- Accès complet pour le public (comme les autres tables)
+CREATE POLICY "allow_all_suivis_nutritionnels"
     ON suivis_nutritionnels
-    FOR SELECT
-    TO authenticated
-    USING (true);
-
--- Insertion : utilisateur authentifié
-CREATE POLICY "allow_insert_suivis_nutritionnels"
-    ON suivis_nutritionnels
-    FOR INSERT
-    TO authenticated
-    WITH CHECK (true);
-
--- Mise à jour : utilisateur authentifié
-CREATE POLICY "allow_update_suivis_nutritionnels"
-    ON suivis_nutritionnels
-    FOR UPDATE
-    TO authenticated
+    FOR ALL
+    TO public
     USING (true)
     WITH CHECK (true);
-
--- Suppression : utilisateur authentifié
-CREATE POLICY "allow_delete_suivis_nutritionnels"
-    ON suivis_nutritionnels
-    FOR DELETE
-    TO authenticated
-    USING (true);
