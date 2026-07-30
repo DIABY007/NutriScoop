@@ -50,3 +50,25 @@ export interface DailyTracking {
   tour_taille_du_jour: number | null;
   created_at: string;
 }
+
+export type NiveauSuivi = "ESSENTIELLE" | "RENFORCEE" | "INTENSE" | "CLINIQUE";
+
+export interface SuiviNutritionnel {
+  id: string;
+  participant_id: string;
+  niveau_suivi: NiveauSuivi;
+  evaluation_nutritionnelle: Record<string, unknown> | null;
+  programme_nutritionnel: string | null;
+  access_token: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type InsertSuiviNutritionnel = Pick<
+  SuiviNutritionnel,
+  "participant_id" | "niveau_suivi" | "evaluation_nutritionnelle" | "programme_nutritionnel"
+>;
+
+export type UpdateSuiviNutritionnel = Partial<
+  Pick<SuiviNutritionnel, "niveau_suivi" | "evaluation_nutritionnelle" | "programme_nutritionnel">
+>;
