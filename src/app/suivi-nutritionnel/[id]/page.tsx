@@ -11,21 +11,23 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
-  // ─── Récupération du participant ───
-  const { data: participant, error } = await supabase
-    .from("participants")
-    .select("*, challenges(nom)")
+  // ─── 1. Récupération du suivi nutritionnel par son ID ───
+  const { data: suivi, error: suiviError } = await supabase
+    .from("suivis_nutritionnels")
+    .select("*")
     .eq("id", id)
     .single();
 
-  if (error || !participant) notFound();
+  if (suiviError || !suivi) notFound();
 
-  // ─── Récupération du suivi nutritionnel existant ───
-  const { data: suivi } = await supabase
-    .from("suivis_nutritionnels")
-    .select("*")
-    .eq("participant_id", id)
+  // ─── 2. Récupération du participant lié ───
+  const { data: participant } = await supabase
+    .from("participants")
+    .select("*, challenges(nom)")
+    .eq("id", suivi.participant_id)
     .single();
+
+  if (!participant) notFound();
 
   const challengeNom = (participant.challenges as { nom: string } | null)?.nom ?? "Challenge";
   const initiales = `${participant.prenom.charAt(0).toUpperCase()}${participant.nom.charAt(0).toUpperCase()}`;
@@ -57,27 +59,21 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
         </span>
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            {suivi?.nom ?? "Suivi nutritionnel"}
+            {suivi.nom}
           </h1>
           <p className="text-sm text-muted mt-1">
             {participant.prenom} {participant.nom} · {participant.age} ans · {challengeNom}
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
-          <span
-            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
-              suivi
-                ? "bg-success/10 text-success"
-                : "bg-muted/30 text-muted-foreground"
-            }`}
-          >
-            {suivi ? "Suivi actif" : "À initier"}
+          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-success/10 text-success">
+            Suivi actif
           </span>
         </div>
       </div>
 
       {/* ─── Onglets Évaluation / Programme ─── */}
-      <SuiviNutritionnelTabs participantId={id} suivi={suivi} />
+      <SuiviNutritionnelTabs participantId={suivi.participant_id} suivi={suivi} />
     </div>
   );
 }
