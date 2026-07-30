@@ -35,8 +35,18 @@ export default async function PatientPortalPage({ params }: PageProps) {
     CLINIQUE: "Clinique",
   };
 
-  // ─── Pourcentage simulé (sera calculé depuis daily_tracking plus tard) ───
-  const progression = 75;
+  // ─── Calcul de la progression depuis daily_tracking ───
+  const { data: trackingData } = await supabase
+    .from("daily_tracking")
+    .select("score_total")
+    .eq("participant_id", participant.id);
+
+  const progression = trackingData && trackingData.length > 0
+    ? Math.round(
+        trackingData.reduce((sum, t) => sum + (t.score_total ?? 0), 0) /
+          trackingData.length
+      )
+    : 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

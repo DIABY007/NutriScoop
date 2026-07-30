@@ -10,6 +10,10 @@ const RichTextEditor = dynamic(
   () => import("@/components/rich-text-editor"),
   { ssr: false }
 );
+const GrilleEvaluation = dynamic(
+  () => import("@/components/grille-evaluation"),
+  { ssr: false }
+);
 const BilanSaisi = dynamic(
   () => import("@/components/bilan-saisi"),
   { ssr: false }
@@ -35,9 +39,14 @@ export function SuiviNutritionnelTabs({ participantId, suivi }: SuiviTabsProps) 
     setIsSaving(true);
     console.log("=== Programme nutritionnel sauvegardé ===");
     console.log(programmeHtml);
-    // Simuler un délai pour le feedback visuel
     setTimeout(() => setIsSaving(false), 600);
   }, [programmeHtml]);
+
+  const handleEvaluationSave = useCallback((data: Record<string, string>) => {
+    console.log("=== Grille d'évaluation enregistrée ===", data);
+  }, []);
+
+  const niveau = suivi?.niveau_suivi ?? "ESSENTIELLE";
 
   return (
     <Tabs
@@ -88,8 +97,21 @@ export function SuiviNutritionnelTabs({ participantId, suivi }: SuiviTabsProps) 
       </TabsList>
 
       {/* ─── Contenu : Évaluation nutritionnelle ─── */}
-      <TabsContent value="evaluation" className="focus-visible:outline-none">
-        <BilanSaisi niveauSuivi="RENFORCEE" />
+      <TabsContent value="evaluation" className="focus-visible:outline-none space-y-8">
+        {/* Grille de questions/réponses */}
+        <GrilleEvaluation
+          initialData={
+            suivi?.evaluation_nutritionnelle
+              ? (suivi.evaluation_nutritionnelle as Record<string, string>)
+              : undefined
+          }
+          onSave={handleEvaluationSave}
+        />
+
+        {/* Bilan textuel selon le niveau de suivi */}
+        <div className="border-t border-border pt-8">
+          <BilanSaisi niveauSuivi={niveau} />
+        </div>
       </TabsContent>
 
       {/* ─── Contenu : Programme nutritionnel ─── */}

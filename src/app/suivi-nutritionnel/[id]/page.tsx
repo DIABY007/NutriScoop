@@ -34,7 +34,7 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
     <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
       {/* ─── Retour ─── */}
       <Link
-        href={`/participant/${participant.id}`}
+        href="/suivi-nutritionnel"
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors mb-6 min-h-11 w-fit"
       >
         <svg
@@ -47,7 +47,7 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
         </svg>
-        Retour au profil — {participant.prenom} {participant.nom}
+        Tous les dossiers de suivi
       </Link>
 
       {/* ─── Bannière ─── */}
@@ -57,7 +57,7 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
         </span>
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Suivi nutritionnel
+            {suivi?.nom ?? "Suivi nutritionnel"}
           </h1>
           <p className="text-sm text-muted mt-1">
             {participant.prenom} {participant.nom} · {participant.age} ans · {challengeNom}

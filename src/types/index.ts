@@ -55,6 +55,7 @@ export type NiveauSuivi = "ESSENTIELLE" | "RENFORCEE" | "INTENSE" | "CLINIQUE";
 
 export interface SuiviNutritionnel {
   id: string;
+  nom: string;
   participant_id: string;
   niveau_suivi: NiveauSuivi;
   evaluation_nutritionnelle: Record<string, unknown> | null;
@@ -66,9 +67,9 @@ export interface SuiviNutritionnel {
 
 export type InsertSuiviNutritionnel = Pick<
   SuiviNutritionnel,
-  "participant_id" | "niveau_suivi" | "evaluation_nutritionnelle" | "programme_nutritionnel"
+  "nom" | "participant_id" | "niveau_suivi" | "evaluation_nutritionnelle" | "programme_nutritionnel"
 >;
 
 export type UpdateSuiviNutritionnel = Partial<
-  Pick<SuiviNutritionnel, "niveau_suivi" | "evaluation_nutritionnelle" | "programme_nutritionnel">
+  Pick<SuiviNutritionnel, "nom" | "niveau_suivi" | "evaluation_nutritionnelle" | "programme_nutritionnel">
 >;
