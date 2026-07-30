@@ -28,7 +28,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col lg:flex-row min-h-full">
+    <div className="flex flex-col lg:flex-row flex-1 min-h-0">
       {/* ─── Barre mobile (top) ─── */}
       <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 bg-surface border-b border-border lg:hidden safe-area-top">
         <Link
