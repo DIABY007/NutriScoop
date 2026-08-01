@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* ─────────────── Thème Aurore AgroVital ───────────────
    Inspiré des règles du Master Template :
@@ -89,4 +90,45 @@ a {
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+/* ─────────────── Styles éditeur Tiptap ──────────────── */
+
+/* Bordures de tableaux dans l'éditeur */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 1em;
+  border: 1px solid var(--color-border);
+  padding: 6px 10px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.ProseMirror th {
+  background-color: var(--color-muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+.ProseMirror .selectedCell {
+  background-color: var(--color-primary-light);
+}
+
+/* Poignées de redimensionnement des colonnes */
+.ProseMirror .tableWrapper {
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.ProseMirror .resize-cursor {
+  cursor: col-resize;
 }
