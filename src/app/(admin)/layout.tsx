@@ -35,9 +35,11 @@ export default function AdminLayout({
           href="/"
           className="flex items-center gap-2 text-foreground font-semibold text-lg"
         >
-          <span className="flex items-center justify-center size-8 rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-            A
-          </span>
+          <img
+            src="/logo.png"
+            alt="Aurore AgroVital"
+            className="size-8 rounded-lg object-contain"
+          />
           <span>Aurore AgroVital</span>
         </Link>
 
@@ -58,9 +60,11 @@ export default function AdminLayout({
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:shrink-0 lg:border-r lg:border-border lg:bg-sidebar">
         <div className="flex flex-col flex-1 min-h-0">
           <div className="flex items-center gap-3 h-16 px-6 border-b border-border shrink-0">
-            <span className="flex items-center justify-center size-9 rounded-xl bg-primary text-primary-foreground text-lg font-bold">
-              A
-            </span>
+            <img
+              src="/logo.png"
+              alt="Aurore AgroVital"
+              className="size-9 rounded-xl object-contain"
+            />
             <span className="text-foreground font-semibold text-lg">
               Aurore AgroVital
             </span>

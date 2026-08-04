@@ -3,9 +3,11 @@ export default function PortalNotFound() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-30 bg-surface border-b border-border safe-area-top">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
-          <span className="flex items-center justify-center size-9 rounded-xl bg-primary text-primary-foreground text-lg font-bold shrink-0">
-            A
-          </span>
+          <img
+            src="/logo.png"
+            alt="Aurore AgroVital"
+            className="size-9 rounded-xl object-contain shrink-0"
+          />
           <span className="text-foreground font-semibold text-lg">
             Aurore AgroVital
           </span>
