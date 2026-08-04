@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import Link from "next/link";
 import { createSuiviNutritionnel, type ActionState } from "@/app/actions/suivi-nutritionnel";
@@ -22,6 +23,14 @@ export function NouveauSuiviForm({ participants }: NouveauSuiviFormProps) {
     { success: false, message: "" }
   );
 
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleParticipant = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
   return (
     <form action={formAction} className="space-y-6">
       {/* ─── Nom du dossier ─── */}
@@ -42,24 +51,51 @@ export function NouveauSuiviForm({ participants }: NouveauSuiviFormProps) {
         )}
       </div>
 
-      {/* ─── Participant ─── */}
+      {/* ─── Participants (multi-sélection) ─── */}
       <div>
-        <label htmlFor="participant_id" className="block text-sm font-medium text-foreground mb-1.5">
-          Participant
+        <label className="block text-sm font-medium text-foreground mb-1.5">
+          Participants
+          <span className="text-xs text-muted-foreground ml-1">(sélection multiples)</span>
         </label>
-        <select
-          id="participant_id"
-          name="participant_id"
-          required
-          className="block w-full min-h-11 px-4 py-2.5 rounded-xl bg-surface border border-border text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-shadow"
-        >
-          <option value="">Sélectionner un participant</option>
-          {participants.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.prenom} {p.nom} — {p.age} ans
-            </option>
-          ))}
-        </select>
+        <div className="max-h-48 overflow-y-auto rounded-xl border border-border bg-surface divide-y divide-border">
+          {participants.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-muted-foreground">
+              Aucun participant disponible. Créez d&apos;abord un challenge avec des participants.
+            </p>
+          ) : (
+            participants.map((p) => (
+              <label
+                key={p.id}
+                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-muted/10 transition-colors has-[:checked]:bg-primary-light/20"
+              >
+                <input
+                  type="checkbox"
+                  name="participant_ids"
+                  value={p.id}
+                  checked={selectedIds.includes(p.id)}
+                  onChange={() => toggleParticipant(p.id)}
+                  className="size-4 rounded border-border accent-primary"
+                />
+                <span className="flex items-center justify-center size-8 rounded-full bg-primary-light text-primary font-semibold text-xs shrink-0">
+                  {p.prenom.charAt(0).toUpperCase()}{p.nom.charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {p.prenom} {p.nom}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.age} ans · {p.poids_initial} kg
+                  </p>
+                </div>
+              </label>
+            ))
+          )}
+        </div>
+        {selectedIds.length > 0 && (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {selectedIds.length} participant{selectedIds.length > 1 ? "s" : ""} sélectionné{selectedIds.length > 1 ? "s" : ""}
+          </p>
+        )}
         {state.errors?.participant_id && (
           <p className="mt-1 text-xs text-destructive">{state.errors.participant_id}</p>
         )}

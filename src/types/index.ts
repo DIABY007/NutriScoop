@@ -9,12 +9,14 @@ export interface Challenge {
 
 export interface Participant {
   id: string;
-  challenge_id: string;
+  challenge_id?: string | null;
   nom: string;
   prenom: string;
   age: number;
-  sexe: "homme" | "femme" | "autre";
-  poids_initial: number;
+  sexe?: string | null;
+  poids_initial?: number | null;
+  telephone?: string | null;
+  profession?: string | null;
   objectif: string | null;
   created_at: string;
 }
@@ -56,7 +58,7 @@ export type NiveauSuivi = "ESSENTIELLE" | "RENFORCEE" | "INTENSE" | "CLINIQUE";
 export interface SuiviNutritionnel {
   id: string;
   nom: string;
-  participant_id: string;
+  participant_id?: string | null;
   niveau_suivi: NiveauSuivi;
   evaluation_nutritionnelle: Record<string, unknown> | null;
   programme_nutritionnel: string | null;
@@ -72,4 +74,18 @@ export type InsertSuiviNutritionnel = Pick<
 
 export type UpdateSuiviNutritionnel = Partial<
   Pick<SuiviNutritionnel, "nom" | "niveau_suivi" | "evaluation_nutritionnelle" | "programme_nutritionnel">
+>;
+
+export interface DossierParticipant {
+  id: string;
+  dossier_id: string;
+  participant_id: string;
+  access_token: string;
+  created_at: string;
+  participants?: Participant;
+}
+
+export type InsertParticipantInDossier = Omit<
+  Participant,
+  "id" | "created_at" | "challenge_id"
 >;

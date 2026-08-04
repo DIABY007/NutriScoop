@@ -6,7 +6,7 @@ async function getSuivis() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("suivis_nutritionnels")
-    .select("*, participants(id, nom, prenom, challenge_id)")
+    .select("*, dossier_participants(participants(id, nom, prenom))")
     .order("created_at", { ascending: false });
   return data ?? [];
 }
@@ -52,8 +52,14 @@ export default async function SuiviNutritionnelListPage() {
       {suivis.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {suivis.map((s) => {
-            const participant = s.participants as { id: string; nom: string; prenom: string } | null;
             const niveau = NIVEAUX_LABEL[s.niveau_suivi] ?? { label: s.niveau_suivi, color: "bg-muted/30 text-muted-foreground" };
+
+            // Extraire les participants depuis dossier_participants
+            const links = s.dossier_participants as Array<{
+              participants: { id: string; nom: string; prenom: string } | null;
+            }> | null;
+            const participants = (links?.map((l) => l.participants).filter((p): p is { id: string; nom: string; prenom: string } => p !== null) ?? []);
+            const participantCount = participants.length;
 
             return (
               <div
@@ -74,13 +80,29 @@ export default async function SuiviNutritionnelListPage() {
                     </span>
                   </div>
 
-                  {/* Participant */}
-                  {participant && (
-                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                  {/* Participants */}
+                  {participantCount > 0 ? (
+                    <div className="flex flex-col gap-1">
+                      {participants.slice(0, 2).map((p) => (
+                        <div key={p.id} className="flex items-center gap-1.5 text-xs text-muted">
+                          <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                          </svg>
+                          {p.prenom} {p.nom}
+                        </div>
+                      ))}
+                      {participantCount > 2 && (
+                        <p className="text-xs text-muted-foreground ml-6">
+                          +{participantCount - 2} autre{participantCount - 2 > 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                       </svg>
-                      {participant.prenom} {participant.nom}
+                      Aucun participant
                     </div>
                   )}
 

@@ -62,10 +62,11 @@ export function EditParticipantForm({ participant, challengeId }: Props) {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="sexe" className="text-sm font-medium text-foreground">Sexe <span className="text-destructive">*</span></label>
-        <select id="sexe" name="sexe" required defaultValue={participant.sexe}
+        <select id="sexe" name="sexe" required defaultValue={participant.sexe ?? ""}
           aria-invalid={!!state.errors?.sexe}
           className="h-11 px-4 rounded-xl border border-input bg-surface text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
         >
+          <option value="" disabled>Sélectionner…</option>
           <option value="homme">Homme</option>
           <option value="femme">Femme</option>
           <option value="autre">Autre</option>
@@ -76,7 +77,7 @@ export function EditParticipantForm({ participant, challengeId }: Props) {
       <div className="flex flex-col gap-1.5">
         <label htmlFor="poids_initial" className="text-sm font-medium text-foreground">Poids initial <span className="text-destructive">*</span></label>
         <div className="relative max-w-40">
-          <input id="poids_initial" name="poids_initial" type="number" required step="0.01" min={0.1} max={999.99} defaultValue={participant.poids_initial}
+          <input id="poids_initial" name="poids_initial" type="number" step="0.01" min={0.1} max={999.99} defaultValue={participant.poids_initial ?? ""}
             aria-invalid={!!state.errors?.poids_initial}
             className="w-full h-11 px-4 pr-10 rounded-xl border border-input bg-surface text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
           />

@@ -27,16 +27,23 @@ export default async function PatientPortalPage({ params }: PageProps) {
 
   const supabase = await createClient();
 
-  // ─── Suivi + participant ───
-  const { data: suivi, error } = await supabase
-    .from("suivis_nutritionnels")
-    .select("*, participants(id, nom, prenom)")
+  // ─── Chercher le token dans dossier_participants ───
+  const { data: link, error: linkError } = await supabase
+    .from("dossier_participants")
+    .select("*, participants(*), suivis_nutritionnels(*)")
     .eq("access_token", token)
     .single();
 
-  if (error || !suivi) notFound();
+  if (linkError || !link) notFound();
 
-  const participant = suivi.participants as { id: string; nom: string; prenom: string };
+  const participant = link.participants as { id: string; nom: string; prenom: string };
+  const suivi = link.suivis_nutritionnels as {
+    nom: string;
+    niveau_suivi: string;
+    programme_nutritionnel: string | null;
+    evaluation_nutritionnelle: Record<string, unknown> | null;
+  };
+
   const prenom = participant.prenom;
   const initiales = `${prenom.charAt(0).toUpperCase()}${participant.nom.charAt(0).toUpperCase()}`;
   const niveau = suivi.niveau_suivi;

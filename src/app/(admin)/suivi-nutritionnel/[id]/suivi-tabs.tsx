@@ -22,11 +22,10 @@ const BilanSaisi = dynamic(
 );
 
 type SuiviTabsProps = {
-  participantId: string;
   suivi: SuiviNutritionnel | null;
 };
 
-export function SuiviNutritionnelTabs({ participantId, suivi }: SuiviTabsProps) {
+export function SuiviNutritionnelTabs({ suivi }: SuiviTabsProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("evaluation");
   const [programmeHtml, setProgrammeHtml] = useState<string>(

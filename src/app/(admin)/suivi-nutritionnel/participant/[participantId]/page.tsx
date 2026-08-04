@@ -9,16 +9,16 @@ export default async function SuiviParParticipantPage({ params }: PageProps) {
   const { participantId } = await params;
   const supabase = await createClient();
 
-  const { data: suivi } = await supabase
-    .from("suivis_nutritionnels")
-    .select("id")
+  const { data: link } = await supabase
+    .from("dossier_participants")
+    .select("dossier_id")
     .eq("participant_id", participantId)
     .single();
 
-  if (!suivi) {
+  if (!link) {
     // Pas de suivi existant → rediriger vers la page de création
     redirect(`/suivi-nutritionnel/nouveau?participant_id=${participantId}`);
   }
 
-  redirect(`/suivi-nutritionnel/${suivi.id}`);
+  redirect(`/suivi-nutritionnel/${link.dossier_id}`);
 }

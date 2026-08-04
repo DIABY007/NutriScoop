@@ -121,10 +121,10 @@ export async function deleteChallenge(challengeId: string): Promise<void> {
 }
 
 // ─────────────────────────────────────────────
-// Création d'un participant (lié à un challenge)
+// Création d'un participant (lié à un challenge optionnellement)
 // ─────────────────────────────────────────────
 export async function createParticipant(
-  challengeId: string,
+  challengeId: string | null,
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
@@ -155,7 +155,7 @@ export async function createParticipant(
   }
 
   const { error } = await supabase.from("participants").insert({
-    challenge_id: challengeId,
+    ...(challengeId ? { challenge_id: challengeId } : {}),
     nom: rawNom,
     prenom: rawPrenom,
     age: parseInt(rawAge),
@@ -256,7 +256,7 @@ export async function deleteParticipant(
 // Création d'un participant + évaluation initiale
 // ─────────────────────────────────────────────
 export async function createParticipantWithEvaluation(
-  challengeId: string,
+  challengeId: string | null,
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
@@ -303,7 +303,7 @@ export async function createParticipantWithEvaluation(
   const { data: newParticipant, error: err1 } = await supabase
     .from("participants")
     .insert({
-      challenge_id: challengeId,
+      ...(challengeId ? { challenge_id: challengeId } : {}),
       nom: rawNom,
       prenom: rawPrenom,
       age,

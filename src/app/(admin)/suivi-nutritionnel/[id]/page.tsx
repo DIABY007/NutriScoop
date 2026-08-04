@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { SuiviNutritionnelTabs } from "./suivi-tabs";
-import CopyLinkButton from "@/components/copy-link-button";
+import { DossierParticipantManager } from "@/components/dossier-participant-manager";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -12,7 +12,7 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
-  // ─── 1. Récupération du suivi nutritionnel par son ID ───
+  // ─── 1. Récupération du suivi nutritionnel ───
   const { data: suivi, error: suiviError } = await supabase
     .from("suivis_nutritionnels")
     .select("*")
@@ -21,17 +21,20 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
 
   if (suiviError || !suivi) notFound();
 
-  // ─── 2. Récupération du participant lié ───
-  const { data: participant } = await supabase
-    .from("participants")
-    .select("*, challenges(nom)")
-    .eq("id", suivi.participant_id)
-    .single();
+  // ─── 2. Récupération des participants liés via dossier_participants ───
+  const { data: dossierParticipants } = await supabase
+    .from("dossier_participants")
+    .select("*, participants(*)")
+    .eq("dossier_id", id)
+    .order("created_at", { ascending: false });
 
-  if (!participant) notFound();
+  const participantsList = dossierParticipants ?? [];
+  const hasParticipants = participantsList.length > 0;
 
-  const challengeNom = (participant.challenges as { nom: string } | null)?.nom ?? "Challenge";
-  const initiales = `${participant.prenom.charAt(0).toUpperCase()}${participant.nom.charAt(0).toUpperCase()}`;
+  // ─── 3. Premier participant pour l'affichage du résumé dans la bannière ───
+  const firstParticipant = participantsList[0]?.participants as {
+    id: string; nom: string; prenom: string; age: number;
+  } | null;
 
   return (
     <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
@@ -55,27 +58,63 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
 
       {/* ─── Bannière ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 p-6 rounded-2xl bg-surface border border-border shadow-sm mb-8">
-        <span className="flex items-center justify-center size-16 sm:size-20 rounded-full bg-primary-light text-primary text-xl sm:text-2xl font-bold shrink-0">
-          {initiales}
-        </span>
+        {/* Avatars des participants */}
+        <div className="flex items-center shrink-0">
+          {participantsList.slice(0, 3).map((dp, i) => {
+            const p = dp.participants as { prenom: string; nom: string } | null;
+            if (!p) return null;
+            return (
+              <span
+                key={dp.id}
+                className={`flex items-center justify-center size-14 sm:size-16 rounded-full bg-primary-light text-primary text-lg sm:text-xl font-bold border-2 border-surface ${
+                  i > 0 ? "-ml-3" : ""
+                }`}
+                title={`${p.prenom} ${p.nom}`}
+              >
+                {p.prenom.charAt(0).toUpperCase()}{p.nom.charAt(0).toUpperCase()}
+              </span>
+            );
+          })}
+          {participantsList.length > 3 && (
+            <span className="flex items-center justify-center size-14 sm:size-16 rounded-full bg-muted text-muted-foreground text-lg sm:text-xl font-bold border-2 border-surface -ml-3">
+              +{participantsList.length - 3}
+            </span>
+          )}
+        </div>
+
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             {suivi.nom}
           </h1>
-          <p className="text-sm text-muted mt-1">
-            {participant.prenom} {participant.nom} · {participant.age} ans · {challengeNom}
-          </p>
+          {hasParticipants ? (
+            <p className="text-sm text-muted mt-1">
+              {participantsList.length} participant{participantsList.length > 1 ? "s" : ""}
+              {firstParticipant && ` · ${firstParticipant.prenom} ${firstParticipant.nom}`}
+              {participantsList.length > 1 && " et +"}
+            </p>
+          ) : (
+            <p className="text-sm text-muted mt-1">
+              Aucun participant dans ce dossier
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-3 shrink-0 self-start sm:self-center flex-wrap">
           <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-success/10 text-success">
             Suivi actif
           </span>
-          <CopyLinkButton accessToken={suivi.access_token} participantPrenom={participant.prenom} participantNom={participant.nom} />
         </div>
       </div>
 
+      {/* ─── Section Participants ─── */}
+      <div className="mb-10">
+        <DossierParticipantManager
+          dossierId={id}
+          initialParticipants={participantsList}
+        />
+      </div>
+
       {/* ─── Onglets Évaluation / Programme ─── */}
-      <SuiviNutritionnelTabs participantId={suivi.participant_id} suivi={suivi} />
+      <SuiviNutritionnelTabs suivi={suivi} />
     </div>
   );
 }
