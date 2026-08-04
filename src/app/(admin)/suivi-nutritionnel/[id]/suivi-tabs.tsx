@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/tabs";
@@ -32,6 +32,18 @@ export function SuiviNutritionnelTabs({ dossierId, participants }: SuiviTabsProp
     participants[0]?.id ?? ""
   );
   const [activeTab, setActiveTab] = useState("evaluation");
+
+  // ─── Synchroniser la sélection quand la liste des participants change ───
+  useEffect(() => {
+    if (participants.length === 0) {
+      setSelectedParticipantId("");
+      return;
+    }
+    setSelectedParticipantId((prev) =>
+      prev && participants.some((p) => p.id === prev) ? prev : participants[0].id
+    );
+  }, [participants]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
