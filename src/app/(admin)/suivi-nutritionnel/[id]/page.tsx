@@ -113,7 +113,7 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
       </div>
 
       {/* ─── Onglets Évaluation / Programme ─── */}
-      <SuiviNutritionnelTabs suivi={suivi} />
+      <SuiviNutritionnelTabs dossierId={id} participants={participantsList} />
     </div>
   );
 }

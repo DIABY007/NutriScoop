@@ -52,7 +52,8 @@ export async function createSuiviNutritionnel(
 // ─────────────────────────────────────────────
 export async function addParticipantToDossier(
   dossierId: string,
-  participantId: string
+  participantId: string,
+  niveau?: string
 ): Promise<ActionState> {
   const supabase = await createClient();
 
@@ -69,6 +70,14 @@ export async function addParticipantToDossier(
     }
     console.error("Erreur ajout participant:", error);
     return { success: false, message: "Erreur lors de l'ajout du participant." };
+  }
+
+  // Mettre à jour le niveau du dossier si fourni
+  if (niveau && ["ESSENTIELLE", "RENFORCEE", "INTENSE", "CLINIQUE"].includes(niveau)) {
+    await supabase
+      .from("suivis_nutritionnels")
+      .update({ niveau_suivi: niveau })
+      .eq("id", dossierId);
   }
 
   revalidatePath(`/suivi-nutritionnel/${dossierId}`);
@@ -91,6 +100,7 @@ export async function createParticipantInDossier(
   const rawAge = formData.get("age") as string;
   const rawTelephone = (formData.get("telephone") as string)?.trim() || null;
   const rawProfession = (formData.get("profession") as string)?.trim() || null;
+  const rawNiveau = formData.get("niveau_suivi") as string;
 
   const errors: Record<string, string> = {};
 
@@ -133,6 +143,14 @@ export async function createParticipantInDossier(
   if (linkError) {
     console.error("Erreur liaison participant:", linkError);
     return { success: false, message: "Participant créé mais erreur de liaison au dossier." };
+  }
+
+  // Mettre à jour le niveau du dossier si fourni
+  if (rawNiveau && ["ESSENTIELLE", "RENFORCEE", "INTENSE", "CLINIQUE"].includes(rawNiveau)) {
+    await supabase
+      .from("suivis_nutritionnels")
+      .update({ niveau_suivi: rawNiveau })
+      .eq("id", dossierId);
   }
 
   revalidatePath(`/suivi-nutritionnel/${dossierId}`);
@@ -230,47 +248,49 @@ export async function updateNiveauSuivi(
 }
 
 // ─────────────────────────────────────────────
-// Sauvegarde de l'évaluation nutritionnelle
+// Sauvegarde de l'évaluation nutritionnelle (par participant)
 // ─────────────────────────────────────────────
 export async function saveEvaluation(
-  suiviId: string,
+  dossierParticipantId: string,
+  dossierId: string,
   data: Record<string, string>
 ): Promise<ActionState> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("suivis_nutritionnels")
+    .from("dossier_participants")
     .update({ evaluation_nutritionnelle: data })
-    .eq("id", suiviId);
+    .eq("id", dossierParticipantId);
 
   if (error) {
     console.error("Erreur Supabase:", error);
     return { success: false, message: "Erreur lors de la sauvegarde de l'évaluation." };
   }
 
-  revalidatePath(`/suivi-nutritionnel/${suiviId}`);
+  revalidatePath(`/suivi-nutritionnel/${dossierId}`);
   return { success: true, message: "Évaluation sauvegardée avec succès !" };
 }
 
 // ─────────────────────────────────────────────
-// Sauvegarde du programme nutritionnel
+// Sauvegarde du programme nutritionnel (par participant)
 // ─────────────────────────────────────────────
 export async function saveProgramme(
-  suiviId: string,
+  dossierParticipantId: string,
+  dossierId: string,
   html: string
 ): Promise<ActionState> {
   const supabase = await createClient();
 
   const { error } = await supabase
-    .from("suivis_nutritionnels")
+    .from("dossier_participants")
     .update({ programme_nutritionnel: html })
-    .eq("id", suiviId);
+    .eq("id", dossierParticipantId);
 
   if (error) {
     console.error("Erreur Supabase:", error);
     return { success: false, message: "Erreur lors de la sauvegarde du programme." };
   }
 
-  revalidatePath(`/suivi-nutritionnel/${suiviId}`);
+  revalidatePath(`/suivi-nutritionnel/${dossierId}`);
   return { success: true, message: "Programme sauvegardé avec succès !" };
 }

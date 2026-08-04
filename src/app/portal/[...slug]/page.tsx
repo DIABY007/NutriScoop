@@ -40,13 +40,15 @@ export default async function PatientPortalPage({ params }: PageProps) {
   const suivi = link.suivis_nutritionnels as {
     nom: string;
     niveau_suivi: string;
-    programme_nutritionnel: string | null;
-    evaluation_nutritionnelle: Record<string, unknown> | null;
-  };
+  } | null;
+
+  // Évaluation et programme sont maintenant sur dossier_participants
+  const programme_nutritionnel = link.programme_nutritionnel as string | null;
+  const evaluation_nutritionnelle = link.evaluation_nutritionnelle as Record<string, unknown> | null;
 
   const prenom = participant.prenom;
   const initiales = `${prenom.charAt(0).toUpperCase()}${participant.nom.charAt(0).toUpperCase()}`;
-  const niveau = suivi.niveau_suivi;
+  const niveau = suivi?.niveau_suivi ?? "ESSENTIELLE";
 
   // ─── Tracking ───
   const { data: trackingData } = await supabase
@@ -66,7 +68,7 @@ export default async function PatientPortalPage({ params }: PageProps) {
 
   // ─── Évaluation (pour RENFORCEE+) ───
   const evalData = niveau !== "ESSENTIELLE"
-    ? (suivi.evaluation_nutritionnelle as Record<string, string> | null)
+    ? (evaluation_nutritionnelle as Record<string, string> | null)
     : null;
 
   return (
@@ -117,10 +119,10 @@ export default async function PatientPortalPage({ params }: PageProps) {
           <div className="px-6 py-4 border-b border-border bg-muted/10">
             <h2 className="text-base font-semibold text-foreground">Votre programme nutritionnel</h2>
           </div>
-          {suivi.programme_nutritionnel ? (
+          {programme_nutritionnel ? (
             <div
               className="px-6 py-6 prose prose-sm sm:prose-base max-w-none text-foreground [&_h1]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_p]:text-foreground [&_li]:text-foreground [&_strong]:text-foreground"
-              dangerouslySetInnerHTML={{ __html: suivi.programme_nutritionnel }}
+              dangerouslySetInnerHTML={{ __html: programme_nutritionnel }}
             />
           ) : (
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">

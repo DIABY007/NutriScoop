@@ -69,3 +69,18 @@ ALTER TABLE participants ADD COLUMN IF NOT EXISTS profession VARCHAR(200);
 -- ------------------------------------------------------------
 ALTER TABLE participants ALTER COLUMN sexe DROP NOT NULL;
 ALTER TABLE participants ALTER COLUMN poids_initial DROP NOT NULL;
+
+-- ------------------------------------------------------------
+-- 8. Ajout evaluation et programme dans dossier_participants
+-- Chaque participant a sa propre évaluation et son programme
+-- ------------------------------------------------------------
+ALTER TABLE dossier_participants ADD COLUMN IF NOT EXISTS evaluation_nutritionnelle JSONB;
+ALTER TABLE dossier_participants ADD COLUMN IF NOT EXISTS programme_nutritionnel TEXT;
+
+-- Migration des données existantes depuis suivis_nutritionnels
+UPDATE dossier_participants dp
+SET
+  evaluation_nutritionnelle = s.evaluation_nutritionnelle,
+  programme_nutritionnel = s.programme_nutritionnel
+FROM suivis_nutritionnels s
+WHERE dp.dossier_id = s.id;

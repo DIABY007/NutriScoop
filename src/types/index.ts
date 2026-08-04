@@ -81,6 +81,8 @@ export interface DossierParticipant {
   dossier_id: string;
   participant_id: string;
   access_token: string;
+  evaluation_nutritionnelle: Record<string, unknown> | null;
+  programme_nutritionnel: string | null;
   created_at: string;
   participants?: Participant;
 }

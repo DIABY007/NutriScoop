@@ -14,10 +14,18 @@ type Props = {
 
 type TabMode = "existing" | "new";
 
+const NIVEAUX = [
+  { value: "ESSENTIELLE", label: "Essentielle", desc: "Bilan mensuel" },
+  { value: "RENFORCEE", label: "Renforcée", desc: "Bilan hebdomadaire" },
+  { value: "INTENSE", label: "Intense", desc: "Bilan quotidien" },
+  { value: "CLINIQUE", label: "Clinique", desc: "Bilan quotidien détaillé" },
+] as const;
+
 export function DossierAddParticipantModal({ dossierId, open, onClose, onParticipantAdded }: Props) {
   const [mode, setMode] = useState<TabMode>("existing");
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [selectedId, setSelectedId] = useState("");
+  const [niveau, setNiveau] = useState("ESSENTIELLE");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,7 +55,7 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
     if (!selectedId) return;
     setPending(true);
     setError("");
-    const result = await addParticipantToDossier(dossierId, selectedId);
+    const result = await addParticipantToDossier(dossierId, selectedId, niveau);
     if (result.success) {
       onParticipantAdded();
       onClose();
@@ -55,7 +63,7 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
       setError(result.message);
     }
     setPending(false);
-  }, [selectedId, dossierId, onParticipantAdded, onClose]);
+  }, [selectedId, dossierId, niveau, onParticipantAdded, onClose]);
 
   const handleSubmitNew = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +76,7 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
     formData.set("age", newAge);
     formData.set("telephone", newTelephone);
     formData.set("profession", newProfession);
+    formData.set("niveau_suivi", niveau);
 
     const result = await createParticipantInDossier(dossierId, { success: false, message: "" }, formData);
     if (result.success) {
@@ -77,11 +86,12 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
       setError(result.message);
     }
     setPending(false);
-  }, [dossierId, newNom, newPrenom, newAge, newTelephone, newProfession, onParticipantAdded, onClose]);
+  }, [dossierId, newNom, newPrenom, newAge, newTelephone, newProfession, niveau, onParticipantAdded, onClose]);
 
   const handleClose = () => {
     setMode("existing");
     setSelectedId("");
+    setNiveau("ESSENTIELLE");
     setNewNom("");
     setNewPrenom("");
     setNewAge("");
@@ -92,6 +102,39 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
   };
 
   if (!open) return null;
+
+  const niveauSelector = (
+    <fieldset>
+      <legend className="block text-sm font-medium text-foreground mb-2">
+        Niveau de suivi
+      </legend>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {NIVEAUX.map((n) => (
+          <label
+            key={n.value}
+            className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+              niveau === n.value
+                ? "border-primary bg-primary-light/20"
+                : "border-border bg-surface hover:border-primary/30"
+            }`}
+          >
+            <input
+              type="radio"
+              name="niveau_suivi"
+              value={n.value}
+              checked={niveau === n.value}
+              onChange={() => setNiveau(n.value)}
+              className="size-4 accent-primary shrink-0"
+            />
+            <div>
+              <span className="text-sm font-medium text-foreground">{n.label}</span>
+              <p className="text-xs text-muted-foreground">{n.desc}</p>
+            </div>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 sm:pt-16 overflow-y-auto">
@@ -147,7 +190,7 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
 
         {/* ══════════ MODE : Participant existant ══════════ */}
         {mode === "existing" && (
-          <div className="px-6 py-5 space-y-4">
+          <div className="px-6 py-5 space-y-5">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="select-participant" className="text-sm font-medium text-foreground">
                 Sélectionner un participant
@@ -166,6 +209,8 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
                 ))}
               </select>
             </div>
+
+            {niveauSelector}
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <button type="button" onClick={handleClose}
@@ -226,6 +271,8 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
                 value={newProfession} onChange={(e) => setNewProfession(e.target.value)}
                 className="h-11 px-4 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
             </div>
+
+            {niveauSelector}
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <button type="button" onClick={handleClose}
