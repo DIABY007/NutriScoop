@@ -20,32 +20,20 @@ export async function createSuiviNutritionnel(
   const supabase = await createClient();
 
   const rawNom = (formData.get("nom") as string)?.trim();
-  const rawParticipantId = formData.get("participant_id") as string;
-  const rawNiveau = formData.get("niveau_suivi") as string;
-  const rawParticipantIds = formData.getAll("participant_ids") as string[];
 
   const errors: Record<string, string> = {};
   if (!rawNom || rawNom.length < 1) errors.nom = "Le nom du dossier est requis.";
   if (rawNom && rawNom.length > 200) errors.nom = "Le nom ne peut pas dépasser 200 caractères.";
-  if (!rawNiveau || !["ESSENTIELLE", "RENFORCEE", "INTENSE", "CLINIQUE"].includes(rawNiveau))
-    errors.niveau_suivi = "Sélectionnez un niveau de suivi valide.";
-
-  // Au moins un participant (soit participant_id legacy, soit participant_ids multiple)
-  const hasParticipant = !!rawParticipantId || rawParticipantIds.length > 0;
-  if (!hasParticipant) {
-    errors.participant_id = "Au moins un participant est requis.";
-  }
 
   if (Object.keys(errors).length > 0) {
     return { success: false, message: "Veuillez corriger les erreurs ci-dessous.", errors };
   }
 
-  // ─── Création du dossier ───
+  // ─── Création du dossier (sans participant, niveau par défaut) ───
   const { data: newSuivi, error } = await supabase
     .from("suivis_nutritionnels")
     .insert({
       nom: rawNom,
-      niveau_suivi: rawNiveau,
     })
     .select("id")
     .single();
@@ -53,31 +41,6 @@ export async function createSuiviNutritionnel(
   if (error || !newSuivi) {
     console.error("Erreur Supabase:", error);
     return { success: false, message: "Erreur lors de la création du suivi nutritionnel." };
-  }
-
-  // ─── Lier les participants ───
-  const allParticipantIds = rawParticipantIds.length > 0
-    ? rawParticipantIds
-    : rawParticipantId
-      ? [rawParticipantId]
-      : [];
-
-  if (allParticipantIds.length > 0) {
-    const rows = allParticipantIds.map((pid) => ({
-      dossier_id: newSuivi.id,
-      participant_id: pid,
-    }));
-
-    const { error: linkError } = await supabase
-      .from("dossier_participants")
-      .insert(rows);
-
-    if (linkError) {
-      console.error("Erreur liaison participants:", linkError);
-      // On nettoie le dossier créé
-      await supabase.from("suivis_nutritionnels").delete().eq("id", newSuivi.id);
-      return { success: false, message: "Erreur lors de la liaison des participants." };
-    }
   }
 
   revalidatePath("/suivi-nutritionnel");

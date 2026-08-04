@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { SuiviNutritionnelTabs } from "./suivi-tabs";
 import { DossierParticipantManager } from "@/components/dossier-participant-manager";
+import NiveauSuiviSelector from "@/components/niveau-suivi-selector";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -99,9 +100,7 @@ export default async function SuiviNutritionnelPage({ params }: PageProps) {
           )}
         </div>
         <div className="flex items-center gap-3 shrink-0 self-start sm:self-center flex-wrap">
-          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-success/10 text-success">
-            Suivi actif
-          </span>
+          <NiveauSuiviSelector suiviId={suivi.id} niveauActuel={suivi.niveau_suivi as import("@/types").NiveauSuivi} />
         </div>
       </div>
 
