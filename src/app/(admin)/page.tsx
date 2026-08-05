@@ -20,6 +20,15 @@ async function getDossiers() {
   return data ?? [];
 }
 
+async function getParticipants() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("participants")
+    .select("id, nom, prenom, age, challenge_id, created_at")
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
 async function getParticipantCounts(): Promise<Record<string, number>> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -35,9 +44,10 @@ async function getParticipantCounts(): Promise<Record<string, number>> {
 }
 
 export default async function HomePage() {
-  const [challenges, dossiers, counts] = await Promise.all([
+  const [challenges, dossiers, participants, counts] = await Promise.all([
     getChallenges(),
     getDossiers(),
+    getParticipants(),
     getParticipantCounts(),
   ]);
 
@@ -48,10 +58,11 @@ export default async function HomePage() {
         <CreateChallengeForm />
       </div>
 
-      {/* ─── Liste rechercheable (challenges + dossiers) ─── */}
+      {/* ─── Liste rechercheable (challenges + dossiers + participants) ─── */}
       <SearchableHomePage
         challenges={challenges}
         dossiers={dossiers}
+        participants={participants}
         participantCounts={counts}
       />
     </div>

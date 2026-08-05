@@ -19,9 +19,19 @@ type DossierBrief = {
   created_at: string;
 };
 
+type ParticipantBrief = {
+  id: string;
+  nom: string;
+  prenom: string;
+  age: number;
+  challenge_id: string | null;
+  created_at: string;
+};
+
 type Props = {
   challenges: ChallengeBrief[];
   dossiers: DossierBrief[];
+  participants: ParticipantBrief[];
   participantCounts: Record<string, number>;
 };
 
@@ -32,7 +42,7 @@ const NIVEAUX_LABEL: Record<string, { label: string; color: string }> = {
   CLINIQUE: { label: "Clinique", color: "bg-destructive/10 text-destructive" },
 };
 
-export default function SearchableHomePage({ challenges, dossiers, participantCounts }: Props) {
+export default function SearchableHomePage({ challenges, dossiers, participants, participantCounts }: Props) {
   const [query, setQuery] = useState("");
 
   const filteredChallenges = useMemo(() => {
@@ -47,8 +57,19 @@ export default function SearchableHomePage({ challenges, dossiers, participantCo
     return dossiers.filter((d) => d.nom.toLowerCase().includes(q));
   }, [dossiers, query]);
 
+  const filteredParticipants = useMemo(() => {
+    if (!query.trim()) return participants;
+    const q = query.toLowerCase().trim();
+    return participants.filter(
+      (p) =>
+        `${p.prenom} ${p.nom}`.toLowerCase().includes(q) ||
+        p.nom.toLowerCase().includes(q) ||
+        p.prenom.toLowerCase().includes(q)
+    );
+  }, [participants, query]);
+
   const now = new Date();
-  const hasResults = filteredChallenges.length > 0 || filteredDossiers.length > 0;
+  const hasResults = filteredChallenges.length > 0 || filteredDossiers.length > 0 || filteredParticipants.length > 0;
 
   return (
     <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
@@ -58,8 +79,8 @@ export default function SearchableHomePage({ challenges, dossiers, participantCo
           Accueil
         </h1>
         <p className="mt-1 text-sm text-muted">
-          {challenges.length + dossiers.length > 0
-            ? `${challenges.length} challenge${challenges.length > 1 ? "s" : ""} · ${dossiers.length} dossier${dossiers.length > 1 ? "s" : ""} de suivi`
+          {challenges.length + dossiers.length + participants.length > 0
+            ? `${challenges.length} challenge${challenges.length > 1 ? "s" : ""} · ${dossiers.length} dossier${dossiers.length > 1 ? "s" : ""} · ${participants.length} participant${participants.length > 1 ? "s" : ""}`
             : "Créez votre premier challenge ou dossier de suivi."}
         </p>
       </div>
@@ -157,6 +178,41 @@ export default function SearchableHomePage({ challenges, dossiers, participantCo
                 </Link>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {/* ─── Section Participants ─── */}
+      {filteredParticipants.length > 0 && (
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">
+              Participants
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                ({filteredParticipants.length})
+              </span>
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredParticipants.map((p) => (
+              <Link
+                key={p.id}
+                href={`/participant/${p.id}`}
+                className="flex items-center gap-3 p-4 rounded-xl bg-surface border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              >
+                <span className="flex items-center justify-center size-10 rounded-full bg-primary-light text-primary font-semibold text-sm shrink-0">
+                  {p.prenom.charAt(0).toUpperCase()}{p.nom.charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {p.prenom} {p.nom}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {p.age} ans{p.challenge_id ? " · Dans un challenge" : ""}
+                  </p>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}
