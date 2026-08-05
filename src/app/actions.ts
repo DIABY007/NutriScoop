@@ -248,6 +248,7 @@ export async function deleteParticipant(
     throw new Error("Impossible de supprimer le participant.");
   }
 
+  revalidatePath("/");
   revalidatePath(`/challenge/${challengeId}`);
   redirect(`/challenge/${challengeId}`);
 }

@@ -145,10 +145,9 @@ export function DailyTrackingForm({ participantId }: Props) {
             id="score_petit_dej"
             name="score_petit_dej"
             type="number"
-            required
             min={0}
             max={40}
-            placeholder="0–40"
+            placeholder="0–40 (optionnel)"
             aria-invalid={!!state.errors?.score_petit_dej}
             className="h-11 px-4 rounded-xl border border-input bg-surface text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
           />
@@ -166,10 +165,9 @@ export function DailyTrackingForm({ participantId }: Props) {
             id="score_dej"
             name="score_dej"
             type="number"
-            required
             min={0}
             max={40}
-            placeholder="0–40"
+            placeholder="0–40 (optionnel)"
             aria-invalid={!!state.errors?.score_dej}
             className="h-11 px-4 rounded-xl border border-input bg-surface text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
           />
@@ -187,10 +185,9 @@ export function DailyTrackingForm({ participantId }: Props) {
             id="score_diner"
             name="score_diner"
             type="number"
-            required
             min={0}
             max={40}
-            placeholder="0–40"
+            placeholder="0–40 (optionnel)"
             aria-invalid={!!state.errors?.score_diner}
             className="h-11 px-4 rounded-xl border border-input bg-surface text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
           />
@@ -208,10 +205,9 @@ export function DailyTrackingForm({ participantId }: Props) {
             id="score_hydratation"
             name="score_hydratation"
             type="number"
-            required
             min={0}
             max={20}
-            placeholder="0–20"
+            placeholder="0–20 (optionnel)"
             aria-invalid={!!state.errors?.score_hydratation}
             className="h-11 px-4 rounded-xl border border-input bg-surface text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
           />
@@ -229,10 +225,9 @@ export function DailyTrackingForm({ participantId }: Props) {
             id="score_sport"
             name="score_sport"
             type="number"
-            required
             min={0}
             max={40}
-            placeholder="0–40"
+            placeholder="0–40 (optionnel)"
             aria-invalid={!!state.errors?.score_sport}
             className="h-11 px-4 rounded-xl border border-input bg-surface text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors aria-[invalid=true]:border-destructive"
           />

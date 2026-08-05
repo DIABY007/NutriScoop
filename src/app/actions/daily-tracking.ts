@@ -9,6 +9,13 @@ export type DailyTrackingState = {
   errors?: Record<string, string>;
 };
 
+function parseScore(value: string, min: number, max: number): number | null {
+  if (!value?.trim()) return null;
+  const n = parseInt(value);
+  if (isNaN(n) || n < min || n > max) return null;
+  return n;
+}
+
 export async function addDailyTracking(
   participantId: string,
   _prevState: DailyTrackingState,
@@ -33,24 +40,21 @@ export async function addDailyTracking(
 
   if (!rawDate) errors.date = "La date est requise.";
 
-  const petitDej = parseInt(rawPetitDej);
-  if (isNaN(petitDej) || petitDej < 0 || petitDej > 40)
+  const petitDej = parseScore(rawPetitDej, 0, 40);
+  const dej = parseScore(rawDej, 0, 40);
+  const diner = parseScore(rawDiner, 0, 40);
+  const hydratation = parseScore(rawHydratation, 0, 20);
+  const sport = parseScore(rawSport, 0, 40);
+
+  if (petitDej === null && rawPetitDej.trim())
     errors.score_petit_dej = "Doit être entre 0 et 40.";
-
-  const dej = parseInt(rawDej);
-  if (isNaN(dej) || dej < 0 || dej > 40)
+  if (dej === null && rawDej.trim())
     errors.score_dej = "Doit être entre 0 et 40.";
-
-  const diner = parseInt(rawDiner);
-  if (isNaN(diner) || diner < 0 || diner > 40)
+  if (diner === null && rawDiner.trim())
     errors.score_diner = "Doit être entre 0 et 40.";
-
-  const hydratation = parseInt(rawHydratation);
-  if (isNaN(hydratation) || hydratation < 0 || hydratation > 20)
+  if (hydratation === null && rawHydratation.trim())
     errors.score_hydratation = "Doit être entre 0 et 20.";
-
-  const sport = parseInt(rawSport);
-  if (isNaN(sport) || sport < 0 || sport > 40)
+  if (sport === null && rawSport.trim())
     errors.score_sport = "Doit être entre 0 et 40.";
 
   const sommeil = rawSommeil ? parseInt(rawSommeil) : null;
@@ -74,10 +78,12 @@ export async function addDailyTracking(
   }
 
   // ─── Calcul du score total (max 100) ───
-  // Score Nutrition = moyenne des 3 repas (max 40)
-  const scoreNutrition = Math.round((petitDej + dej + diner) / 3);
-  // Score Total = Nutrition + Hydratation + Sport (max 40 + 20 + 40 = 100)
-  const scoreTotal = scoreNutrition + hydratation + sport;
+  // Score Nutrition = moyenne des repas renseignés (max 40)
+  const scoresRepas = [petitDej, dej, diner].filter((s): s is number => s !== null);
+  const scoreNutrition = scoresRepas.length > 0
+    ? Math.round(scoresRepas.reduce((a, b) => a + b, 0) / scoresRepas.length)
+    : 0;
+  const scoreTotal = scoreNutrition + (hydratation ?? 0) + (sport ?? 0);
 
   // ─── Insertion ───
   const { error } = await supabase.from("daily_tracking").insert({
@@ -96,7 +102,6 @@ export async function addDailyTracking(
   });
 
   if (error) {
-    // Gestion de la contrainte UNIQUE (participant_id, date)
     if (error.code === "23505") {
       return {
         success: false,
@@ -161,16 +166,18 @@ export async function updateDailyTracking(
   const errors: Record<string, string> = {};
   if (!rawDate) errors.date = "La date est requise.";
 
-  const petitDej = parseInt(rawPetitDej);
-  if (isNaN(petitDej) || petitDej < 0 || petitDej > 40) errors.score_petit_dej = "Doit être entre 0 et 40.";
-  const dej = parseInt(rawDej);
-  if (isNaN(dej) || dej < 0 || dej > 40) errors.score_dej = "Doit être entre 0 et 40.";
-  const diner = parseInt(rawDiner);
-  if (isNaN(diner) || diner < 0 || diner > 40) errors.score_diner = "Doit être entre 0 et 40.";
-  const hydratation = parseInt(rawHydratation);
-  if (isNaN(hydratation) || hydratation < 0 || hydratation > 20) errors.score_hydratation = "Doit être entre 0 et 20.";
-  const sport = parseInt(rawSport);
-  if (isNaN(sport) || sport < 0 || sport > 40) errors.score_sport = "Doit être entre 0 et 40.";
+  const petitDej = parseScore(rawPetitDej, 0, 40);
+  const dej = parseScore(rawDej, 0, 40);
+  const diner = parseScore(rawDiner, 0, 40);
+  const hydratation = parseScore(rawHydratation, 0, 20);
+  const sport = parseScore(rawSport, 0, 40);
+
+  if (petitDej === null && rawPetitDej.trim()) errors.score_petit_dej = "Doit être entre 0 et 40.";
+  if (dej === null && rawDej.trim()) errors.score_dej = "Doit être entre 0 et 40.";
+  if (diner === null && rawDiner.trim()) errors.score_diner = "Doit être entre 0 et 40.";
+  if (hydratation === null && rawHydratation.trim()) errors.score_hydratation = "Doit être entre 0 et 20.";
+  if (sport === null && rawSport.trim()) errors.score_sport = "Doit être entre 0 et 40.";
+
   const sommeil = rawSommeil ? parseInt(rawSommeil) : null;
   if (sommeil !== null && (isNaN(sommeil) || sommeil < 0 || sommeil > 10)) errors.note_sommeil = "Doit être entre 0 et 10.";
   const stress = rawStress ? parseInt(rawStress) : null;
@@ -184,8 +191,11 @@ export async function updateDailyTracking(
     return { success: false, message: "Veuillez corriger les erreurs.", errors };
   }
 
-  const scoreNutrition = Math.round((petitDej + dej + diner) / 3);
-  const scoreTotal = scoreNutrition + hydratation + sport;
+  const scoresRepas = [petitDej, dej, diner].filter((s): s is number => s !== null);
+  const scoreNutrition = scoresRepas.length > 0
+    ? Math.round(scoresRepas.reduce((a, b) => a + b, 0) / scoresRepas.length)
+    : 0;
+  const scoreTotal = scoreNutrition + (hydratation ?? 0) + (sport ?? 0);
 
   const { error } = await supabase
     .from("daily_tracking")

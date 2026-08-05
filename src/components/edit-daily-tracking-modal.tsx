@@ -79,32 +79,37 @@ export function EditDailyTrackingModal({ entry, onClose }: Props) {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1">
               <label htmlFor="edit_petit_dej" className="text-xs font-medium">P. Déj /40</label>
-              <input id="edit_petit_dej" name="score_petit_dej" type="number" required min={0} max={40}
-                defaultValue={entry.score_petit_dej ?? 0}
+              <input id="edit_petit_dej" name="score_petit_dej" type="number" min={0} max={40}
+                defaultValue={entry.score_petit_dej ?? ""}
+                placeholder="0–40"
                 className="h-10 px-3 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="edit_dej" className="text-xs font-medium">Déj /40</label>
-              <input id="edit_dej" name="score_dej" type="number" required min={0} max={40}
-                defaultValue={entry.score_dej ?? 0}
+              <input id="edit_dej" name="score_dej" type="number" min={0} max={40}
+                defaultValue={entry.score_dej ?? ""}
+                placeholder="0–40"
                 className="h-10 px-3 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="edit_diner" className="text-xs font-medium">Dîner /40</label>
-              <input id="edit_diner" name="score_diner" type="number" required min={0} max={40}
-                defaultValue={entry.score_diner ?? 0}
+              <input id="edit_diner" name="score_diner" type="number" min={0} max={40}
+                defaultValue={entry.score_diner ?? ""}
+                placeholder="0–40"
                 className="h-10 px-3 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="edit_hydratation" className="text-xs font-medium">Hydra. /20</label>
-              <input id="edit_hydratation" name="score_hydratation" type="number" required min={0} max={20}
-                defaultValue={entry.score_hydratation ?? 0}
+              <input id="edit_hydratation" name="score_hydratation" type="number" min={0} max={20}
+                defaultValue={entry.score_hydratation ?? ""}
+                placeholder="0–20"
                 className="h-10 px-3 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="edit_sport" className="text-xs font-medium">Sport /40</label>
-              <input id="edit_sport" name="score_sport" type="number" required min={0} max={40}
-                defaultValue={entry.score_sport ?? 0}
+              <input id="edit_sport" name="score_sport" type="number" min={0} max={40}
+                defaultValue={entry.score_sport ?? ""}
+                placeholder="0–40"
                 className="h-10 px-3 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
             </div>
             <div className="flex flex-col gap-1">
