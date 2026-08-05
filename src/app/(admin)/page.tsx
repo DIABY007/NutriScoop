@@ -29,6 +29,14 @@ async function getParticipants() {
   return data ?? [];
 }
 
+async function getDossierParticipantIds(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("dossier_participants")
+    .select("participant_id");
+  return [...new Set((data ?? []).map((dp) => dp.participant_id))];
+}
+
 async function getParticipantCounts(): Promise<Record<string, number>> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -44,10 +52,11 @@ async function getParticipantCounts(): Promise<Record<string, number>> {
 }
 
 export default async function HomePage() {
-  const [challenges, dossiers, participants, counts] = await Promise.all([
+  const [challenges, dossiers, participants, dossierParticipantIds, counts] = await Promise.all([
     getChallenges(),
     getDossiers(),
     getParticipants(),
+    getDossierParticipantIds(),
     getParticipantCounts(),
   ]);
 
@@ -63,6 +72,7 @@ export default async function HomePage() {
         challenges={challenges}
         dossiers={dossiers}
         participants={participants}
+        dossierParticipantIds={dossierParticipantIds}
         participantCounts={counts}
       />
     </div>

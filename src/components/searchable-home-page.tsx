@@ -32,6 +32,7 @@ type Props = {
   challenges: ChallengeBrief[];
   dossiers: DossierBrief[];
   participants: ParticipantBrief[];
+  dossierParticipantIds: string[];
   participantCounts: Record<string, number>;
 };
 
@@ -42,7 +43,7 @@ const NIVEAUX_LABEL: Record<string, { label: string; color: string }> = {
   CLINIQUE: { label: "Clinique", color: "bg-destructive/10 text-destructive" },
 };
 
-export default function SearchableHomePage({ challenges, dossiers, participants, participantCounts }: Props) {
+export default function SearchableHomePage({ challenges, dossiers, participants, dossierParticipantIds, participantCounts }: Props) {
   const [query, setQuery] = useState("");
 
   const filteredChallenges = useMemo(() => {
@@ -194,25 +195,39 @@ export default function SearchableHomePage({ challenges, dossiers, participants,
             </h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredParticipants.map((p) => (
-              <Link
-                key={p.id}
-                href={`/participant/${p.id}`}
-                className="flex items-center gap-3 p-4 rounded-xl bg-surface border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-              >
-                <span className="flex items-center justify-center size-10 rounded-full bg-primary-light text-primary font-semibold text-sm shrink-0">
-                  {p.prenom.charAt(0).toUpperCase()}{p.nom.charAt(0).toUpperCase()}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground truncate">
-                    {p.prenom} {p.nom}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {p.age} ans{p.challenge_id ? " · Dans un challenge" : ""}
-                  </p>
-                </div>
-              </Link>
-            ))}
+            {filteredParticipants.map((p) => {
+              const dansChallenge = !!p.challenge_id;
+              const dansDossier = dossierParticipantIds.includes(p.id);
+              let contexte = "";
+              let lien = `/participant/${p.id}`;
+              if (dansChallenge && dansDossier) {
+                contexte = " · Challenge + Suivi nutritionnel";
+              } else if (dansChallenge) {
+                contexte = " · Dans un challenge";
+              } else if (dansDossier) {
+                contexte = " · Suivi nutritionnel";
+                lien = `/suivi-nutritionnel/participant/${p.id}`;
+              }
+              return (
+                <Link
+                  key={p.id}
+                  href={lien}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-surface border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                >
+                  <span className="flex items-center justify-center size-10 rounded-full bg-primary-light text-primary font-semibold text-sm shrink-0">
+                    {p.prenom.charAt(0).toUpperCase()}{p.nom.charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {p.prenom} {p.nom}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {p.age} ans{contexte}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
