@@ -74,10 +74,12 @@ export default function SearchableHomePage({ challenges, dossiers, participantCo
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
           <input
-            type="search"
+            type="text"
+            inputMode="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher par nom…"
+            autoComplete="off"
             className="w-full h-11 pl-10 pr-4 rounded-xl border border-border bg-surface text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-shadow"
           />
           {query && (
