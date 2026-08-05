@@ -140,7 +140,7 @@ export function ParticipantEvaluationForm({ challengeId, open, onClose }: Props)
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label htmlFor="eval_age" className="text-sm font-medium">Âge <span className="text-destructive">*</span></label>
-                  <input id="eval_age" name="age" type="number" required min={1} max={150} placeholder="30"
+                  <input id="eval_age" name="age" type="text" inputMode="numeric" required placeholder="30"
                     value={form.age} onChange={(e) => updateField("age", e.target.value)}
                     className="h-11 px-4 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors max-w-32" />
                 </div>
@@ -157,7 +157,7 @@ export function ParticipantEvaluationForm({ challengeId, open, onClose }: Props)
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label htmlFor="eval_poids" className="text-sm font-medium">Poids actuel <span className="text-destructive">*</span></label>
                   <div className="relative max-w-32">
-                    <input id="eval_poids" name="poids_initial" type="number" required step="0.1" min={0.1} max={999.99} placeholder="75.5"
+                    <input id="eval_poids" name="poids_initial" type="text" inputMode="decimal" required placeholder="75.5"
                       value={form.poids_initial} onChange={(e) => updateField("poids_initial", e.target.value)}
                       className="w-full h-11 px-4 pr-8 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">kg</span>
@@ -253,7 +253,7 @@ export function ParticipantEvaluationForm({ challengeId, open, onClose }: Props)
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="eval_taille" className="text-sm font-medium">Taille</label>
                   <div className="relative">
-                    <input id="eval_taille" name="taille" type="number" step="0.5" min={100} max={250} placeholder="175"
+                    <input id="eval_taille" name="taille" type="text" inputMode="decimal" placeholder="175"
                       value={form.taille} onChange={(e) => updateField("taille", e.target.value)}
                       className="w-full h-11 px-4 pr-8 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">cm</span>
@@ -262,7 +262,7 @@ export function ParticipantEvaluationForm({ challengeId, open, onClose }: Props)
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="eval_tour_taille" className="text-sm font-medium">Tour de taille</label>
                   <div className="relative">
-                    <input id="eval_tour_taille" name="tour_taille" type="number" step="0.5" min={40} max={200} placeholder="85"
+                    <input id="eval_tour_taille" name="tour_taille" type="text" inputMode="decimal" placeholder="85"
                       value={form.tour_taille} onChange={(e) => updateField("tour_taille", e.target.value)}
                       className="w-full h-11 px-4 pr-8 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">cm</span>
@@ -271,7 +271,7 @@ export function ParticipantEvaluationForm({ challengeId, open, onClose }: Props)
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="eval_tour_hanches" className="text-sm font-medium">Tour de hanches</label>
                   <div className="relative">
-                    <input id="eval_tour_hanches" name="tour_hanches" type="number" step="0.5" min={40} max={200} placeholder="100"
+                    <input id="eval_tour_hanches" name="tour_hanches" type="text" inputMode="decimal" placeholder="100"
                       value={form.tour_hanches} onChange={(e) => updateField("tour_hanches", e.target.value)}
                       className="w-full h-11 px-4 pr-8 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">cm</span>
@@ -280,7 +280,7 @@ export function ParticipantEvaluationForm({ challengeId, open, onClose }: Props)
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="eval_tour_bras" className="text-sm font-medium">Tour de bras</label>
                   <div className="relative">
-                    <input id="eval_tour_bras" name="tour_bras" type="number" step="0.5" min={15} max={80} placeholder="35"
+                    <input id="eval_tour_bras" name="tour_bras" type="text" inputMode="decimal" placeholder="35"
                       value={form.tour_bras} onChange={(e) => updateField("tour_bras", e.target.value)}
                       className="w-full h-11 px-4 pr-8 rounded-xl border border-input bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">cm</span>
