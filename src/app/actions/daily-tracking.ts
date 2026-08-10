@@ -85,29 +85,47 @@ export async function addDailyTracking(
     : 0;
   const scoreTotal = scoreNutrition + (hydratation ?? 0) + (sport ?? 0);
 
-  // ─── Insertion ───
-  const { error } = await supabase.from("daily_tracking").insert({
+  // ─── Récupérer les valeurs existantes pour les compléter ───
+  const { data: existing } = await supabase
+    .from("daily_tracking")
+    .select("score_petit_dej, score_dej, score_diner, score_hydratation, score_sport, note_sommeil, note_stress, poids_du_jour, tour_taille_du_jour")
+    .eq("participant_id", participantId)
+    .eq("date", rawDate)
+    .single();
+
+  const finalPetitDej = petitDej ?? existing?.score_petit_dej;
+  const finalDej = dej ?? existing?.score_dej;
+  const finalDiner = diner ?? existing?.score_diner;
+  const finalHydratation = hydratation ?? existing?.score_hydratation;
+  const finalSport = sport ?? existing?.score_sport;
+  const finalSommeil = sommeil ?? existing?.note_sommeil;
+  const finalStress = stress ?? existing?.note_stress;
+  const finalPoidsJour = poidsJour ?? existing?.poids_du_jour;
+  const finalTourTailleJour = tourTailleJour ?? existing?.tour_taille_du_jour;
+
+  const scoresRepasFinal = [finalPetitDej, finalDej, finalDiner].filter((s): s is number => s !== null);
+  const scoreNutritionFinal = scoresRepasFinal.length > 0
+    ? Math.round(scoresRepasFinal.reduce((a, b) => a + b, 0) / scoresRepasFinal.length)
+    : 0;
+  const scoreTotalFinal = scoreNutritionFinal + (finalHydratation ?? 0) + (finalSport ?? 0);
+
+  // ─── Upsert : crée ou met à jour l'entrée existante ───
+  const { error } = await supabase.from("daily_tracking").upsert({
     participant_id: participantId,
     date: rawDate,
-    score_petit_dej: petitDej,
-    score_dej: dej,
-    score_diner: diner,
-    score_hydratation: hydratation,
-    score_sport: sport,
-    note_sommeil: sommeil,
-    note_stress: stress,
-    score_total: scoreTotal,
-    poids_du_jour: poidsJour,
-    tour_taille_du_jour: tourTailleJour,
-  });
+    score_petit_dej: finalPetitDej,
+    score_dej: finalDej,
+    score_diner: finalDiner,
+    score_hydratation: finalHydratation,
+    score_sport: finalSport,
+    note_sommeil: finalSommeil,
+    note_stress: finalStress,
+    score_total: scoreTotalFinal,
+    poids_du_jour: finalPoidsJour,
+    tour_taille_du_jour: finalTourTailleJour,
+  }, { onConflict: "participant_id, date" });
 
   if (error) {
-    if (error.code === "23505") {
-      return {
-        success: false,
-        message: "Un suivi existe déjà pour cette date.",
-      };
-    }
     console.error("Erreur Supabase:", error);
     return {
       success: false,
@@ -191,27 +209,40 @@ export async function updateDailyTracking(
     return { success: false, message: "Veuillez corriger les erreurs.", errors };
   }
 
-  const scoresRepas = [petitDej, dej, diner].filter((s): s is number => s !== null);
-  const scoreNutrition = scoresRepas.length > 0
-    ? Math.round(scoresRepas.reduce((a, b) => a + b, 0) / scoresRepas.length)
+  // ─── Récupérer les valeurs existantes pour les compléter ───
+  const { data: existing } = await supabase
+    .from("daily_tracking")
+    .select("score_petit_dej, score_dej, score_diner, score_hydratation, score_sport, note_sommeil, note_stress, poids_du_jour, tour_taille_du_jour")
+    .eq("id", entryId)
+    .single();
+
+  const finalPetitDej = petitDej ?? existing?.score_petit_dej;
+  const finalDej = dej ?? existing?.score_dej;
+  const finalDiner = diner ?? existing?.score_diner;
+  const finalHydratation = hydratation ?? existing?.score_hydratation;
+  const finalSport = sport ?? existing?.score_sport;
+
+  const scoresRepasFinal = [finalPetitDej, finalDej, finalDiner].filter((s): s is number => s !== null);
+  const scoreNutritionFinal = scoresRepasFinal.length > 0
+    ? Math.round(scoresRepasFinal.reduce((a, b) => a + b, 0) / scoresRepasFinal.length)
     : 0;
-  const scoreTotal = scoreNutrition + (hydratation ?? 0) + (sport ?? 0);
+  const scoreTotalFinal = scoreNutritionFinal + (finalHydratation ?? 0) + (finalSport ?? 0);
+
+  // On ne met à jour que les champs qui ont été effectivement remplis
+  const updatePayload: Record<string, unknown> = { date: rawDate, score_total: scoreTotalFinal };
+  if (petitDej !== null) updatePayload.score_petit_dej = petitDej;
+  if (dej !== null) updatePayload.score_dej = dej;
+  if (diner !== null) updatePayload.score_diner = diner;
+  if (hydratation !== null) updatePayload.score_hydratation = hydratation;
+  if (sport !== null) updatePayload.score_sport = sport;
+  if (sommeil !== null) updatePayload.note_sommeil = sommeil;
+  if (stress !== null) updatePayload.note_stress = stress;
+  if (poidsJour !== null) updatePayload.poids_du_jour = poidsJour;
+  if (tourTailleJour !== null) updatePayload.tour_taille_du_jour = tourTailleJour;
 
   const { error } = await supabase
     .from("daily_tracking")
-    .update({
-      date: rawDate,
-      score_petit_dej: petitDej,
-      score_dej: dej,
-      score_diner: diner,
-      score_hydratation: hydratation,
-      score_sport: sport,
-      note_sommeil: sommeil,
-      note_stress: stress,
-      score_total: scoreTotal,
-      poids_du_jour: poidsJour,
-      tour_taille_du_jour: tourTailleJour,
-    })
+    .update(updatePayload)
     .eq("id", entryId);
 
   if (error) {
