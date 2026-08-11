@@ -93,15 +93,15 @@ export async function addDailyTracking(
     .eq("date", rawDate)
     .single();
 
-  const finalPetitDej = petitDej ?? existing?.score_petit_dej;
-  const finalDej = dej ?? existing?.score_dej;
-  const finalDiner = diner ?? existing?.score_diner;
-  const finalHydratation = hydratation ?? existing?.score_hydratation;
-  const finalSport = sport ?? existing?.score_sport;
-  const finalSommeil = sommeil ?? existing?.note_sommeil;
-  const finalStress = stress ?? existing?.note_stress;
-  const finalPoidsJour = poidsJour ?? existing?.poids_du_jour;
-  const finalTourTailleJour = tourTailleJour ?? existing?.tour_taille_du_jour;
+  const finalPetitDej = petitDej ?? existing?.score_petit_dej ?? null;
+  const finalDej = dej ?? existing?.score_dej ?? null;
+  const finalDiner = diner ?? existing?.score_diner ?? null;
+  const finalHydratation = hydratation ?? existing?.score_hydratation ?? null;
+  const finalSport = sport ?? existing?.score_sport ?? null;
+  const finalSommeil = sommeil ?? existing?.note_sommeil ?? null;
+  const finalStress = stress ?? existing?.note_stress ?? null;
+  const finalPoidsJour = poidsJour ?? existing?.poids_du_jour ?? null;
+  const finalTourTailleJour = tourTailleJour ?? existing?.tour_taille_du_jour ?? null;
 
   const scoresRepasFinal = [finalPetitDej, finalDej, finalDiner].filter((s): s is number => s !== null);
   const scoreNutritionFinal = scoresRepasFinal.length > 0
@@ -216,11 +216,15 @@ export async function updateDailyTracking(
     .eq("id", entryId)
     .single();
 
-  const finalPetitDej = petitDej ?? existing?.score_petit_dej;
-  const finalDej = dej ?? existing?.score_dej;
-  const finalDiner = diner ?? existing?.score_diner;
-  const finalHydratation = hydratation ?? existing?.score_hydratation;
-  const finalSport = sport ?? existing?.score_sport;
+  const finalPetitDej = petitDej ?? existing?.score_petit_dej ?? null;
+  const finalDej = dej ?? existing?.score_dej ?? null;
+  const finalDiner = diner ?? existing?.score_diner ?? null;
+  const finalHydratation = hydratation ?? existing?.score_hydratation ?? null;
+  const finalSport = sport ?? existing?.score_sport ?? null;
+  const finalSommeil = sommeil ?? existing?.note_sommeil ?? null;
+  const finalStress = stress ?? existing?.note_stress ?? null;
+  const finalPoidsJour = poidsJour ?? existing?.poids_du_jour ?? null;
+  const finalTourTailleJour = tourTailleJour ?? existing?.tour_taille_du_jour ?? null;
 
   const scoresRepasFinal = [finalPetitDej, finalDej, finalDiner].filter((s): s is number => s !== null);
   const scoreNutritionFinal = scoresRepasFinal.length > 0
