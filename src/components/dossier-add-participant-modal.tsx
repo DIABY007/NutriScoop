@@ -51,6 +51,19 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
     fetchParticipants();
   }, [open, mode]);
 
+  const handleClose = () => {
+    setMode("existing");
+    setSelectedId("");
+    setNiveau("ESSENTIELLE");
+    setNewNom("");
+    setNewPrenom("");
+    setNewAge("");
+    setNewTelephone("");
+    setNewProfession("");
+    setError("");
+    onClose();
+  };
+
   const handleSubmitExisting = useCallback(async () => {
     if (!selectedId) return;
     setPending(true);
@@ -58,12 +71,12 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
     const result = await addParticipantToDossier(dossierId, selectedId, niveau);
     if (result.success) {
       onParticipantAdded();
-      onClose();
+      handleClose();
     } else {
       setError(result.message);
     }
     setPending(false);
-  }, [selectedId, dossierId, niveau, onParticipantAdded, onClose]);
+  }, [selectedId, dossierId, niveau, onParticipantAdded, handleClose]);
 
   const handleSubmitNew = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,25 +94,12 @@ export function DossierAddParticipantModal({ dossierId, open, onClose, onPartici
     const result = await createParticipantInDossier(dossierId, { success: false, message: "" }, formData);
     if (result.success) {
       onParticipantAdded();
-      onClose();
+      handleClose();
     } else {
       setError(result.message);
     }
     setPending(false);
-  }, [dossierId, newNom, newPrenom, newAge, newTelephone, newProfession, niveau, onParticipantAdded, onClose]);
-
-  const handleClose = () => {
-    setMode("existing");
-    setSelectedId("");
-    setNiveau("ESSENTIELLE");
-    setNewNom("");
-    setNewPrenom("");
-    setNewAge("");
-    setNewTelephone("");
-    setNewProfession("");
-    setError("");
-    onClose();
-  };
+  }, [dossierId, newNom, newPrenom, newAge, newTelephone, newProfession, niveau, onParticipantAdded, handleClose]);
 
   if (!open) return null;
 
